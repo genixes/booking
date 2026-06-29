@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Court Booking</title>
+
+<!-- ============================================================
+     PASTE YOUR FIREBASE CONFIG BELOW
+     Firebase Console > Project settings > Your apps > Web app > Config
+     ============================================================ -->
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyB2wWZOPyhTLlGOhQldAh3wz5zIuDw1d8g",
+    authDomain: "layaw-pickleball.firebaseapp.com",
+    projectId: "layaw-pickleball",
+    storageBucket: "layaw-pickleball.firebasestorage.app",
+    messagingSenderId: "940525720373",
+    appId: "1:940525720373:web:dfbe3e353e1402bf27727c"
+  };
+</script>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+<style>
+  :root {
+    --navy: #15455F; --navy-d: #0E3140;
+    --green: #1FB373; --green-d: #178C5A;
+    --bg: #EEF3F3; --card: #FFFFFF; --line: #E2E9EA; --text: #1B2E36; --muted: #6B828C;
+    --open-bg: #E7F6EE; --open-tx: #178C5A;
+    --sel-bg:  #15455F; --sel-tx:  #FFFFFF;
+    --book-bg: #FBE7E5; --book-tx: #C2453B;
+    --pend-bg: #FCF1D8; --pend-tx: #B07D0C;
+    --radius: 16px; --shadow: 0 1px 2px rgba(21,69,95,.05), 0 10px 30px rgba(21,69,95,.07);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: var(--bg); color: var(--text); line-height: 1.5; -webkit-font-smoothing: antialiased; }
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 22px 16px 100px; }
+
+  .brand { display: flex; align-items: center; gap: 14px; }
+  .brand img { width: 52px; height: 52px; border-radius: 12px; object-fit: cover; }
+  .brand .eyebrow { font-size: 11px; letter-spacing: .18em; font-weight: 700; color: var(--muted); text-transform: uppercase; }
+  .brand h1 { font-size: 22px; font-weight: 800; color: var(--navy); letter-spacing: -.02em; line-height: 1.1; }
+  .subline { color: var(--muted); font-size: 14px; margin: 10px 2px 0; }
+
+  /* Hero slideshow */
+  .hero-wrap { position: relative; width: 100%; height: 230px; border-radius: var(--radius); overflow: hidden; margin-top: 16px; box-shadow: var(--shadow); background: var(--navy-d); }
+  .hero-wrap img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity 1s ease; }
+  .hero-wrap img.active { opacity: 1; }
+  .hero-dots { position: absolute; bottom: 12px; left: 0; right: 0; display: flex; gap: 7px; justify-content: center; z-index: 2; }
+  .hero-dots span { width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,.5); }
+  .hero-dots span.on { background: #fff; }
+
+  .grid-layout { display: grid; grid-template-columns: 300px 1fr 320px; gap: 18px; margin-top: 18px; align-items: start; }
+  @media (max-width: 1000px) { .grid-layout { grid-template-columns: 1fr; } }
+
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); padding: 18px; }
+  .card h3 { font-size: 16px; font-weight: 800; color: var(--navy); margin-bottom: 14px; }
+  .card h3.sm { font-size: 14px; margin-bottom: 12px; }
+
+  .cal-nav { display: flex; gap: 8px; align-items: center; margin-bottom: 12px; }
+  .cal-nav .today { flex: 1; }
+  .btn-ghost { border: 1px solid var(--line); background: #fff; border-radius: 10px; padding: 9px 12px; font: inherit; font-weight: 600; cursor: pointer; color: var(--navy); }
+  .btn-ghost:hover { border-color: var(--green); }
+  .btn-ghost:disabled { opacity: .4; cursor: not-allowed; }
+  .cal-month { text-align: center; font-weight: 700; color: var(--navy); margin-bottom: 8px; }
+  .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
+  .cal-grid .dow { text-align: center; font-size: 11px; font-weight: 700; color: var(--muted); padding: 6px 0; }
+  .cal-day { aspect-ratio: 1; display: grid; place-items: center; border-radius: 9px; font-size: 13px; font-weight: 600; cursor: pointer; border: 1px solid transparent; color: var(--text); }
+  .cal-day:hover:not(.disabled):not(.active) { background: var(--open-bg); }
+  .cal-day.disabled { color: #C2CDD1; cursor: not-allowed; }
+  .cal-day.active { background: var(--navy); color: #fff; }
+  .cal-note { font-size: 12px; color: var(--muted); margin-top: 12px; line-height: 1.5; }
+  .cal-note strong { color: var(--navy); }
+
+  .legend { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .legend .item { display: flex; gap: 10px; align-items: flex-start; }
+  .legend .sw { width: 22px; height: 22px; border-radius: 6px; flex: none; margin-top: 1px; }
+  .legend .lab { font-size: 13px; font-weight: 700; }
+  .legend .sub { font-size: 11px; color: var(--muted); }
+
+  .info-bar { background: #EAF1F7; border: 1px solid #D5E3EE; color: #2E5C7E; border-radius: 10px; padding: 10px 12px; font-size: 13px; font-weight: 500; margin-bottom: 14px; }
+  .table-scroll { overflow-x: auto; }
+  table.slots { width: 100%; border-collapse: separate; border-spacing: 0; min-width: 420px; }
+  table.slots thead th { font-size: 13px; font-weight: 700; color: var(--navy); padding: 10px 8px; text-align: center; border-bottom: 1px solid var(--line); white-space: nowrap; }
+  table.slots thead th:first-child { text-align: left; }
+  .time-cell { font-size: 13px; font-weight: 700; color: var(--text); padding: 0 10px; white-space: nowrap; border-bottom: 1px solid var(--line); }
+  .cell { border-bottom: 1px solid var(--line); padding: 6px; }
+  .cell-inner { border-radius: 9px; padding: 12px 4px; text-align: center; font-size: 13px; font-weight: 700; }
+  .cell-open { background: var(--open-bg); color: var(--open-tx); cursor: pointer; }
+  .cell-open:hover { outline: 2px solid var(--green); outline-offset: -2px; }
+  .cell-selected { background: var(--sel-bg); color: var(--sel-tx); cursor: pointer; }
+  .cell-booked { background: var(--book-bg); color: var(--book-tx); cursor: not-allowed; }
+  .cell-pending { background: var(--pend-bg); color: var(--pend-tx); cursor: not-allowed; }
+
+  .summary { position: sticky; top: 18px; }
+  .sum-empty { color: var(--muted); font-size: 14px; }
+  .sum-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; }
+  .sum-item { display: flex; justify-content: space-between; gap: 8px; font-size: 13px; padding-bottom: 8px; border-bottom: 1px dashed var(--line); }
+  .sum-item .meta { display: flex; flex-direction: column; }
+  .sum-item .price { font-weight: 700; color: var(--navy); white-space: nowrap; }
+  .sum-item .x { color: var(--muted); cursor: pointer; font-weight: 700; }
+  .sum-total { display: flex; justify-content: space-between; align-items: center; margin: 14px 0; }
+  .sum-total .lab { font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); font-weight: 700; }
+  .sum-total .val { font-size: 26px; font-weight: 800; color: var(--navy); }
+  .btn { width: 100%; background: var(--green); color: #fff; border: none; padding: 15px; border-radius: 12px; font: inherit; font-weight: 700; font-size: 16px; cursor: pointer; transition: background .15s ease; }
+  .btn:hover { background: var(--green-d); }
+  .btn:disabled { background: #B7C6C9; cursor: not-allowed; }
+  .sum-note { font-size: 12px; color: var(--muted); margin-top: 10px; }
+
+  /* Mobile sticky bar */
+  .mobile-bar { display: none; }
+  @media (max-width: 1000px) {
+    .summary .btn { display: none; }
+    .mobile-bar { display: flex; position: fixed; left: 0; right: 0; bottom: 0; background: var(--navy); color: #fff; padding: 12px 16px; gap: 18px; align-items: center; z-index: 40; box-shadow: 0 -4px 20px rgba(0,0,0,.18); }
+    .mobile-bar .mb-lab { font-size: 10px; letter-spacing: .1em; opacity: .8; font-weight: 700; }
+    .mobile-bar .mb-val { font-size: 18px; font-weight: 800; }
+    .mobile-bar .mb-btn { margin-left: auto; width: auto; background: #fff; color: var(--navy); padding: 13px 22px; font-size: 15px; }
+    .mobile-bar .mb-btn:disabled { background: rgba(255,255,255,.4); color: rgba(255,255,255,.7); }
+  }
+
+  .overlay { position: fixed; inset: 0; background: rgba(14,49,64,.55); display: none; place-items: center; padding: 16px; z-index: 50; }
+  .overlay.show { display: grid; }
+  .modal { background: #fff; border-radius: var(--radius); padding: 24px; width: 100%; max-width: 440px; box-shadow: var(--shadow); }
+  .modal h3 { font-size: 18px; color: var(--navy); margin-bottom: 4px; }
+  .modal p.mini { font-size: 13px; color: var(--muted); margin-bottom: 16px; }
+  label.fl { display: block; font-weight: 600; font-size: 14px; margin: 12px 0 6px; }
+  .modal input { width: 100%; padding: 12px 14px; border: 1px solid var(--line); border-radius: 10px; font: inherit; }
+  .modal input:focus { outline: 2px solid var(--green); border-color: var(--green); }
+  .modal-actions { display: flex; gap: 10px; margin-top: 20px; }
+  .modal-actions .btn-ghost { flex: 1; padding: 14px; }
+  .modal-actions .btn { flex: 2; }
+
+  .loading, .error-box { text-align: center; padding: 60px 16px; color: var(--muted); }
+  .error-box { color: #C2453B; font-weight: 600; }
+  .toast { position: fixed; left: 50%; bottom: 80px; transform: translateX(-50%); background: var(--navy-d); color: #fff; padding: 14px 20px; border-radius: 12px; font-weight: 600; box-shadow: var(--shadow); opacity: 0; pointer-events: none; transition: opacity .2s; max-width: 90%; text-align: center; z-index: 60; }
+  .toast.show { opacity: 1; }
+  .success-modal { text-align: center; }
+  .success-modal .check { width: 56px; height: 56px; border-radius: 50%; background: var(--green); color: #fff; display: grid; place-items: center; font-size: 28px; margin: 0 auto 14px; }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="brand">
+    <img id="logo" alt="" style="display:none;" />
+    <div><div class="eyebrow">Pickleball</div><h1 id="bizName">Loading…</h1></div>
+  </div>
+  <p class="subline" id="bizTagline"></p>
+  <div id="heroWrap" class="hero-wrap" style="display:none;"></div>
+
+  <div id="loading" class="loading">Connecting to the booking system…</div>
+  <div id="errorBox" class="error-box" style="display:none;"></div>
+
+  <div id="app" class="grid-layout" style="display:none;">
+    <div>
+      <div class="card">
+        <h3>Select a date</h3>
+        <div class="cal-nav">
+          <button class="btn-ghost" id="prevMonth">‹</button>
+          <button class="btn-ghost today" id="todayBtn">Today</button>
+          <button class="btn-ghost" id="nextMonth">›</button>
+        </div>
+        <div class="cal-month" id="calMonth"></div>
+        <div class="cal-grid" id="calGrid"></div>
+        <p class="cal-note" id="calNote"></p>
+      </div>
+      <div class="card" style="margin-top:16px;">
+        <h3 class="sm">Slot legend</h3>
+        <div class="legend">
+          <div class="item"><div class="sw" style="background:var(--open-bg)"></div><div><div class="lab">Open</div><div class="sub">Available</div></div></div>
+          <div class="item"><div class="sw" style="background:var(--sel-bg)"></div><div><div class="lab">Selected</div><div class="sub">You selected</div></div></div>
+          <div class="item"><div class="sw" style="background:var(--book-bg)"></div><div><div class="lab">Booked</div><div class="sub">Not available</div></div></div>
+          <div class="item"><div class="sw" style="background:var(--pend-bg)"></div><div><div class="lab">Pending</div><div class="sub">On hold</div></div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Select your slots</h3>
+      <div class="info-bar">Tap a cell to select. Tap multiple courts and hours to select more.</div>
+      <div class="table-scroll">
+        <table class="slots"><thead><tr id="gridHead"></tr></thead><tbody id="gridBody"></tbody></table>
+      </div>
+    </div>
+
+    <div class="card summary">
+      <h3>Reservation Summary</h3>
+      <div id="sumEmpty" class="sum-empty">No slots selected yet. Pick a date, then tap open slots.</div>
+      <div id="sumList" class="sum-list"></div>
+      <div class="sum-total"><span class="lab">Estimated total</span><span class="val" id="sumTotal">₱0</span></div>
+      <button class="btn" id="continueBtn" disabled>Continue to details</button>
+      <p class="sum-note">Your booking starts as pending until the club confirms it.</p>
+    </div>
+  </div>
+</div>
+
+<!-- Mobile sticky bar -->
+<div class="mobile-bar" id="mobileBar">
+  <div><div class="mb-lab">SLOTS</div><div class="mb-val" id="mbSlots">0</div></div>
+  <div><div class="mb-lab">TOTAL</div><div class="mb-val" id="mbTotal">₱0</div></div>
+  <button class="btn mb-btn" id="mbContinue" disabled>Continue</button>
+</div>
+
+<div class="overlay" id="detailsOverlay">
+  <div class="modal">
+    <h3>Your details</h3>
+    <p class="mini">Almost done — just a few details to hold your slots.</p>
+    <label class="fl" for="nameInput">Full name</label>
+    <input type="text" id="nameInput" placeholder="Juan Dela Cruz" />
+    <label class="fl" for="contactInput">Mobile number</label>
+    <input type="tel" id="contactInput" placeholder="09XX XXX XXXX" />
+    <label class="fl" for="emailInput">Email (optional)</label>
+    <input type="email" id="emailInput" placeholder="you@email.com" />
+    <div class="modal-actions">
+      <button class="btn-ghost" id="cancelDetails">Back</button>
+      <button class="btn" id="confirmBtn">Confirm booking</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="successOverlay">
+  <div class="modal success-modal">
+    <div class="check">✓</div>
+    <h3>Booking received!</h3>
+    <p class="mini" id="successMsg" style="margin-top:8px;"></p>
+    <button class="btn" id="doneBtn" style="margin-top:18px;">Make another booking</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============================================================
+   Layaw System — Firebase Booking Page
+   Features: per-client theming, hero slideshow, time-based
+   rates, real-time grid availability, responsive + mobile bar.
+   ============================================================ */
+
+let db;
+try { firebase.initializeApp(firebaseConfig); db = firebase.firestore(); }
+catch (e) { showError("Could not connect. Check the Firebase config at the top of this file."); }
+
+let SETTINGS=null, COURTS=[], RATES=[];
+let viewYear, viewMonth, selectedDate=null;
+let selected=new Set();
+let bookedSet=new Set(), pendingSet=new Set();
+let availUnsub=null;
+
+const $=(id)=>document.getElementById(id);
+function showError(m){ $("loading").style.display="none"; $("app").style.display="none"; $("errorBox").style.display="block"; $("errorBox").textContent=m; }
+function toast(m){ const t=$("toast"); t.textContent=m; t.classList.add("show"); setTimeout(()=>t.classList.remove("show"),2600); }
+function pad2(n){ return String(n).padStart(2,"0"); }
+function dstr(d){ return d.getFullYear()+"-"+pad2(d.getMonth()+1)+"-"+pad2(d.getDate()); }
+function today(){ const d=new Date(); d.setHours(0,0,0,0); return d; }
+function parseDstr(s){ const [y,m,d]=s.split("-").map(Number); return new Date(y,m-1,d); }
+function hm2min(s){ if(!s) return 0; const [h,m]=String(s).split(":").map(Number); return (h||0)*60+(m||0); }
+function hourLabel(mins){ let h=Math.floor(mins/60),m=mins%60; const ap=h>=12&&h<24?"PM":"AM"; let h12=h%12; if(h12===0)h12=12; if(h>=24){h12=12;} return m===0?(h12+ap):(h12+":"+pad2(m)+ap); }
+function slotRangeLabel(s,step){ return hourLabel(s)+"-"+hourLabel(s+step); }
+function peso(n){ return "₱"+Number(n).toLocaleString("en-PH"); }
+function darken(hex,f){ hex=String(hex).replace("#",""); if(hex.length===3)hex=hex.split("").map(c=>c+c).join(""); const n=parseInt(hex,16); let r=Math.round(((n>>16)&255)*f), g=Math.round(((n>>8)&255)*f), b=Math.round((n&255)*f); return "#"+[r,g,b].map(x=>("0"+x.toString(16)).slice(-2)).join(""); }
+
+async function loadData(){
+  if(!db) return;
+  try{
+    const cfg=await db.collection("settings").doc("config").get();
+    if(!cfg.exists){ showError("Settings not found. Create a 'settings' collection with a 'config' document."); return; }
+    SETTINGS=cfg.data();
+
+    const cs=await db.collection("courts").get();
+    COURTS=[]; cs.forEach(d=>{ const c=d.data(); if(c.active!==false) COURTS.push({id:d.id,name:c.name||"Court"}); });
+    COURTS.sort((a,b)=>a.name.localeCompare(b.name));
+    if(!COURTS.length){ showError("No active courts found. Add courts in the 'courts' collection."); return; }
+
+    // Time-based rates (optional). Each doc: { start:"06:00", end:"17:00", rate:500 }
+    try{
+      const rs=await db.collection("rates").get();
+      RATES=[]; rs.forEach(d=>{ const r=d.data(); let s=hm2min(r.start), e=hm2min(r.end); if(e<=s)e+=1440; RATES.push({start:s,end:e,rate:Number(r.rate)}); });
+      RATES.sort((a,b)=>a.start-b.start);
+    }catch(e){ RATES=[]; }
+
+    applyTheme();
+    renderBrand();
+    startHero();
+    const t=today(); viewYear=t.getFullYear(); viewMonth=t.getMonth(); selectedDate=dstr(t);
+    renderCalendar(); renderGridHead(); watchAvailability(); updateSummary();
+    $("loading").style.display="none"; $("app").style.display="grid";
+  }catch(e){ console.error(e); showError("Failed to load data: "+(e.message||e)); }
+}
+
+/* ---------- Theme (per-client colors) ---------- */
+function applyTheme(){
+  const root=document.documentElement.style;
+  const primary=SETTINGS.colorPrimary||"#15455F";
+  const accent=SETTINGS.colorAccent||"#1FB373";
+  root.setProperty("--navy", primary);
+  root.setProperty("--navy-d", SETTINGS.colorPrimaryDark||darken(primary,0.68));
+  root.setProperty("--green", accent);
+  root.setProperty("--green-d", SETTINGS.colorAccentDark||darken(accent,0.82));
+  root.setProperty("--sel-bg", primary);
+}
+
+function renderBrand(){
+  $("bizName").textContent=SETTINGS.businessName||"Court Booking";
+  $("bizTagline").textContent=SETTINGS.tagline||"";
+  document.title=(SETTINGS.businessName||"Court")+" — Booking";
+  if(SETTINGS.logoUrl){ const l=$("logo"); l.src=SETTINGS.logoUrl; l.style.display="block"; }
+}
+
+/* ---------- Hero slideshow (1 image = static, 2-4 = rotate) ---------- */
+function heroImages(){
+  if(Array.isArray(SETTINGS.heroUrls) && SETTINGS.heroUrls.length) return SETTINGS.heroUrls.filter(Boolean);
+  if(SETTINGS.heroUrl) return [SETTINGS.heroUrl];
+  return [];
+}
+function startHero(){
+  const imgs=heroImages(); if(!imgs.length) return;
+  const wrap=$("heroWrap"); wrap.style.display="block"; wrap.innerHTML="";
+  imgs.forEach((src,i)=>{ const im=document.createElement("img"); im.src=src; im.alt=""; if(i===0)im.classList.add("active"); wrap.appendChild(im); });
+  if(imgs.length>1){
+    const dots=document.createElement("div"); dots.className="hero-dots";
+    imgs.forEach((_,i)=>{ const d=document.createElement("span"); if(i===0)d.classList.add("on"); dots.appendChild(d); });
+    wrap.appendChild(dots);
+    let idx=0;
+    setInterval(()=>{
+      const slides=wrap.querySelectorAll("img");
+      slides[idx].classList.remove("active"); dots.children[idx].classList.remove("on");
+      idx=(idx+1)%slides.length;
+      slides[idx].classList.add("active"); dots.children[idx].classList.add("on");
+    }, 4000);
+  }
+}
+
+/* ---------- Calendar ---------- */
+function advanceDays(){ return Number(SETTINGS.advanceDays ?? 30); }
+function maxDate(){ const d=today(); d.setDate(d.getDate()+advanceDays()); return d; }
+function renderCalendar(){
+  const mn=["January","February","March","April","May","June","July","August","September","October","November","December"];
+  $("calMonth").textContent=mn[viewMonth]+" "+viewYear;
+  const grid=$("calGrid"); grid.innerHTML="";
+  ["SUN","MON","TUE","WED","THU","FRI","SAT"].forEach(d=>{ const e=document.createElement("div"); e.className="dow"; e.textContent=d; grid.appendChild(e); });
+  const first=new Date(viewYear,viewMonth,1), startDow=first.getDay(), daysIn=new Date(viewYear,viewMonth+1,0).getDate();
+  const tmin=today(), tmax=maxDate();
+  for(let i=0;i<startDow;i++) grid.appendChild(document.createElement("div"));
+  for(let day=1;day<=daysIn;day++){
+    const cell=document.createElement("div"); cell.className="cal-day"; cell.textContent=day;
+    const thisDate=new Date(viewYear,viewMonth,day), ds=dstr(thisDate);
+    if(thisDate<tmin||thisDate>tmax){ cell.classList.add("disabled"); }
+    else { if(ds===selectedDate) cell.classList.add("active"); cell.onclick=()=>{ selectedDate=ds; selected.clear(); renderCalendar(); watchAvailability(); renderGrid(); updateSummary(); }; }
+    grid.appendChild(cell);
+  }
+  const prevAllowed=new Date(viewYear,viewMonth,1)>new Date(tmin.getFullYear(),tmin.getMonth(),1);
+  const nextAllowed=new Date(viewYear,viewMonth+1,1)<=tmax;
+  $("prevMonth").disabled=!prevAllowed; $("nextMonth").disabled=!nextAllowed;
+  $("calNote").innerHTML="Bookings available until <strong>"+maxDate().toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"})+"</strong> ("+advanceDays()+" days from today).";
+}
+$("prevMonth").onclick=()=>{ viewMonth--; if(viewMonth<0){viewMonth=11;viewYear--;} renderCalendar(); };
+$("nextMonth").onclick=()=>{ viewMonth++; if(viewMonth>11){viewMonth=0;viewYear++;} renderCalendar(); };
+$("todayBtn").onclick=()=>{ const t=today(); viewYear=t.getFullYear(); viewMonth=t.getMonth(); selectedDate=dstr(t); selected.clear(); renderCalendar(); watchAvailability(); renderGrid(); updateSummary(); };
+
+/* ---------- Slots + rates ---------- */
+function buildSlots(){
+  const open=Number(SETTINGS.openHour??8), close=Number(SETTINGS.closeHour??22), step=Number(SETTINGS.slotMinutes??60);
+  const arr=[]; for(let mins=open*60; mins+step<=close*60; mins+=step){ arr.push({mins, key:pad2(Math.floor(mins/60))+":"+pad2(mins%60), label:slotRangeLabel(mins,step)}); } return arr;
+}
+function rateForSlot(startMins){
+  if(RATES.length){ const r=RATES.find(r=>startMins>=r.start && startMins<r.end); if(r) return r.rate; }
+  return Number(SETTINGS.ratePerHour??0);
+}
+function slotCost(startMins){ return (Number(SETTINGS.slotMinutes??60)/60)*rateForSlot(startMins); }
+
+function renderGridHead(){
+  const tr=$("gridHead"); tr.innerHTML="";
+  const th0=document.createElement("th"); th0.textContent="Time"; tr.appendChild(th0);
+  COURTS.forEach(c=>{ const th=document.createElement("th"); th.textContent=c.name; tr.appendChild(th); });
+}
+function watchAvailability(){
+  if(!db) return;
+  if(availUnsub){ availUnsub(); availUnsub=null; }
+  availUnsub=db.collection("bookings").where("date","==",selectedDate).onSnapshot(snap=>{
+    bookedSet=new Set(); pendingSet=new Set();
+    snap.forEach(doc=>{ const b=doc.data(); if(b.status==="cancelled")return; const set=(b.status==="confirmed")?bookedSet:pendingSet; (b.slots||[]).forEach(s=>set.add(b.court+"|"+s)); });
+    renderGrid();
+  }, err=>console.error(err));
+}
+function renderGrid(){
+  const body=$("gridBody"); body.innerHTML="";
+  buildSlots().forEach(slot=>{
+    const tr=document.createElement("tr");
+    const tc=document.createElement("td"); tc.className="time-cell"; tc.textContent=slot.label; tr.appendChild(tc);
+    COURTS.forEach(c=>{
+      const td=document.createElement("td"); td.className="cell";
+      const key=c.name+"|"+slot.key;
+      const inner=document.createElement("div"); inner.className="cell-inner";
+      if(bookedSet.has(key)){ inner.className+=" cell-booked"; inner.textContent="Booked"; }
+      else if(pendingSet.has(key)){ inner.className+=" cell-pending"; inner.textContent="Pending"; }
+      else if(selected.has(key)){ inner.className+=" cell-selected"; inner.textContent="Selected"; inner.onclick=()=>{ selected.delete(key); renderGrid(); updateSummary(); }; }
+      else { inner.className+=" cell-open"; inner.textContent="Open"; inner.onclick=()=>{ selected.add(key); renderGrid(); updateSummary(); }; }
+      td.appendChild(inner); tr.appendChild(td);
+    });
+    body.appendChild(tr);
+  });
+}
+
+/* ---------- Summary ---------- */
+function updateSummary(){
+  const list=$("sumList"), empty=$("sumEmpty");
+  list.innerHTML=""; let total=0;
+  if(selected.size===0){ empty.style.display="block"; }
+  else {
+    empty.style.display="none";
+    const step=Number(SETTINGS.slotMinutes??60);
+    [...selected].sort().forEach(key=>{
+      const [court,hhmm]=key.split("|");
+      const mins=hm2min(hhmm); const cost=slotCost(mins); total+=cost;
+      const row=document.createElement("div"); row.className="sum-item";
+      const meta=document.createElement("div"); meta.className="meta";
+      meta.innerHTML="<span>"+court+"</span><span style='color:var(--muted);font-size:12px'>"+slotRangeLabel(mins,step)+"</span>";
+      const right=document.createElement("div"); right.style.cssText="display:flex;gap:10px;align-items:center";
+      const price=document.createElement("span"); price.className="price"; price.textContent=peso(cost);
+      const x=document.createElement("span"); x.className="x"; x.textContent="✕"; x.onclick=()=>{ selected.delete(key); renderGrid(); updateSummary(); };
+      right.appendChild(price); right.appendChild(x);
+      row.appendChild(meta); row.appendChild(right); list.appendChild(row);
+    });
+  }
+  $("sumTotal").textContent=peso(total);
+  $("continueBtn").disabled=selected.size===0;
+  // mobile bar
+  $("mbSlots").textContent=selected.size;
+  $("mbTotal").textContent=peso(total);
+  $("mbContinue").disabled=selected.size===0;
+}
+
+/* ---------- Details + submit ---------- */
+function openDetails(){ if(selected.size>0) $("detailsOverlay").classList.add("show"); }
+$("continueBtn").onclick=openDetails;
+$("mbContinue").onclick=openDetails;
+$("cancelDetails").onclick=()=>$("detailsOverlay").classList.remove("show");
+
+$("confirmBtn").onclick=async ()=>{
+  const name=$("nameInput").value.trim(), contact=$("contactInput").value.trim(), email=$("emailInput").value.trim();
+  if(!name){ toast("Please enter your name."); return; }
+  if(!contact){ toast("Please enter your mobile number."); return; }
+  const btn=$("confirmBtn"); btn.disabled=true; btn.textContent="Booking…";
+  try{
+    const snap=await db.collection("bookings").where("date","==",selectedDate).get();
+    const taken=new Set(); snap.forEach(doc=>{ const b=doc.data(); if(b.status==="cancelled")return; (b.slots||[]).forEach(s=>taken.add(b.court+"|"+s)); });
+    const clash=[...selected].find(k=>taken.has(k));
+    if(clash){ const [c,h]=clash.split("|"); toast("Sorry, "+c+" "+hourLabel(hm2min(h))+" was just taken."); btn.disabled=false; btn.textContent="Confirm booking"; $("detailsOverlay").classList.remove("show"); renderGrid(); updateSummary(); return; }
+
+    const byCourt={}; [...selected].forEach(k=>{ const [court,hhmm]=k.split("|"); (byCourt[court]=byCourt[court]||[]).push(hhmm); });
+    const batch=db.batch();
+    Object.keys(byCourt).forEach(court=>{
+      const slots=byCourt[court].sort();
+      const amount=slots.reduce((sum,s)=>sum+slotCost(hm2min(s)),0);
+      const ref=db.collection("bookings").doc();
+      batch.set(ref,{ bookerName:name, contact:contact, email:email, date:selectedDate, court:court, slots:slots, startTime:slots[0], endTime:slots[slots.length-1], amount:amount, status:"pending", createdAt:firebase.firestore.FieldValue.serverTimestamp() });
+    });
+    await batch.commit();
+
+    $("detailsOverlay").classList.remove("show");
+    $("successMsg").textContent="Thanks, "+name+"! Your "+selected.size+" slot(s) on "+parseDstr(selectedDate).toLocaleDateString("en-US",{weekday:"short",month:"short",day:"numeric"})+" are now pending confirmation.";
+    $("successOverlay").classList.add("show");
+  }catch(e){ console.error(e); toast("Something went wrong. Please try again."); btn.disabled=false; btn.textContent="Confirm booking"; }
+  finally { btn.disabled=false; btn.textContent="Confirm booking"; }
+};
+
+$("doneBtn").onclick=()=>{ selected.clear(); $("nameInput").value=""; $("contactInput").value=""; $("emailInput").value=""; $("successOverlay").classList.remove("show"); renderGrid(); updateSummary(); window.scrollTo({top:0,behavior:"smooth"}); };
+
+loadData();
+</script>
+</body>
+</html>
