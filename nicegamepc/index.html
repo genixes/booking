@@ -149,6 +149,14 @@ html, body { max-width: 100%; overflow-x: hidden; }
 .table-scroll { max-width: 100%; }
 img { max-width: 100%; }
 @media (max-width: 1000px) { .hero-wrap { height: 190px; } }
+
+table.slots thead th { position: sticky; top: 0; background: var(--card); z-index: 2; }
+table.slots thead th:first-child { left: 0; z-index: 3; }
+table.slots .time-cell { position: sticky; left: 0; background: var(--card); z-index: 2; }
+@media (min-width: 1001px) {
+  .grid-layout > div { position: sticky; top: 18px; align-self: start; }
+  .table-scroll { max-height: calc(100vh - 240px); overflow-y: auto; }
+}
      
 </style>
 </head>
