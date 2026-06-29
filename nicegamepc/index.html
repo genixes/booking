@@ -372,6 +372,7 @@ function renderFooterLinks(){
   }
   if(SETTINGS.facebookLink) html.push('<a href="'+SETTINGS.facebookLink+'" target="_blank" rel="noopener">📘 '+(SETTINGS.facebookName||"Facebook Page")+'</a>');
   if(SETTINGS.instagramLink) html.push('<a href="'+SETTINGS.instagramLink+'" target="_blank" rel="noopener">📸 '+(SETTINGS.instagramName||"Instagram")+'</a>');
+  const h=html.join(""); $("footerLinks").innerHTML=h; $("footerLinks2").innerHTML=h;
 }
 
 /* Calendar */
