@@ -157,6 +157,11 @@ table.slots .time-cell { position: sticky; left: 0; background: var(--card); z-i
   .grid-layout > div { position: sticky; top: 18px; align-self: start; }
   .table-scroll { max-height: calc(100vh - 240px); overflow-y: auto; }
 }
+
+table.slots { width: max-content; min-width: 100%; }
+table.slots thead th:not(:first-child), table.slots td.cell { min-width: 104px; }
+table.slots thead th:first-child, table.slots td.time-cell { width: 80px; min-width: 80px; }
+.cell-inner { white-space: nowrap; }
      
 </style>
 </head>
