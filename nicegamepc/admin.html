@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Manager Dashboard</title>
+
+<!-- ============================================================
+     PASTE THE SAME FIREBASE CONFIG AS YOUR BOOKING PAGE
+     ============================================================ -->
+<script>
+  const firebaseConfig = {
+     apiKey: "AIzaSyB2wWZOPyhTLlGOhQldAh3wz5zIuDw1d8g",
+     authDomain: "layaw-pickleball.firebaseapp.com",
+     projectId: "layaw-pickleball",
+     storageBucket: "layaw-pickleball.firebasestorage.app",
+     messagingSenderId: "940525720373",
+     appId: "1:940525720373:web:dfbe3e353e1402bf27727c"
+
+  };
+</script>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+<style>
+  :root {
+    --navy:#15455F; --navy-d:#0E3140; --green:#1FB373; --green-d:#178C5A;
+    --bg:#EEF3F3; --card:#FFFFFF; --line:#E2E9EA; --text:#1B2E36; --muted:#6B828C;
+    --pend-bg:#FCF1D8; --pend-tx:#B07D0C; --ok-bg:#E7F6EE; --ok-tx:#178C5A; --cancel:#C2453B;
+    --radius:16px; --shadow:0 1px 2px rgba(21,69,95,.05),0 10px 30px rgba(21,69,95,.07);
+  }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  html, body { max-width:100%; overflow-x:hidden; }
+  body { font-family:"Plus Jakarta Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; background:var(--bg); color:var(--text); line-height:1.5; -webkit-font-smoothing:antialiased; }
+  img { max-width:100%; }
+
+  /* Login */
+  .login-wrap { min-height:100vh; display:grid; place-items:center; padding:16px; }
+  .login-card { background:var(--card); border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow); padding:30px; width:100%; max-width:380px; }
+  .login-card .brand { display:flex; align-items:center; gap:12px; margin-bottom:6px; }
+  .login-card .brand img { width:44px; height:44px; border-radius:10px; object-fit:cover; }
+  .login-card h1 { font-size:20px; color:var(--navy); font-weight:800; }
+  .login-card .eyebrow { font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--muted); font-weight:700; }
+  .login-card p.sub { color:var(--muted); font-size:14px; margin:10px 0 20px; }
+  label.fl { display:block; font-weight:600; font-size:14px; margin:14px 0 6px; }
+  input { width:100%; padding:12px 14px; border:1px solid var(--line); border-radius:10px; font:inherit; }
+  input:focus { outline:2px solid var(--green); border-color:var(--green); }
+  .btn { width:100%; background:var(--green); color:#fff; border:none; padding:14px; border-radius:12px; font:inherit; font-weight:700; font-size:16px; cursor:pointer; transition:background .15s; }
+  .btn:hover { background:var(--green-d); }
+  .btn:disabled { background:#B7C6C9; cursor:not-allowed; }
+  .login-err { color:var(--cancel); font-size:13px; font-weight:600; margin-top:12px; min-height:18px; }
+
+  /* Dashboard */
+  .topbar { background:var(--navy); color:#fff; padding:16px 20px; display:flex; align-items:center; gap:14px; }
+  .topbar img { width:40px; height:40px; border-radius:9px; object-fit:cover; }
+  .topbar h1 { font-size:17px; font-weight:800; line-height:1.15; }
+  .topbar .eyebrow { font-size:10px; letter-spacing:.14em; text-transform:uppercase; opacity:.7; font-weight:700; }
+  .topbar .signout { margin-left:auto; background:rgba(255,255,255,.14); color:#fff; border:none; padding:9px 16px; border-radius:9px; font:inherit; font-weight:600; cursor:pointer; }
+  .topbar .signout:hover { background:rgba(255,255,255,.24); }
+
+  .container { max-width:840px; margin:0 auto; padding:20px 16px 60px; }
+  .controls { display:flex; gap:12px; flex-wrap:wrap; align-items:flex-end; margin-bottom:18px; }
+  .controls .grp { display:flex; flex-direction:column; gap:5px; }
+  .controls label { font-size:12px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.06em; }
+  .controls input, .controls select { padding:11px 13px; border:1px solid var(--line); border-radius:10px; font:inherit; background:#fff; }
+
+  .stats { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-bottom:18px; }
+  .stat { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:14px 16px; box-shadow:var(--shadow); }
+  .stat .n { font-size:24px; font-weight:800; color:var(--navy); }
+  .stat .l { font-size:12px; color:var(--muted); font-weight:600; }
+
+  .booking { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:16px; box-shadow:var(--shadow); margin-bottom:12px; }
+  .booking .row1 { display:flex; align-items:center; gap:10px; margin-bottom:8px; }
+  .booking .court { font-weight:800; color:var(--navy); font-size:16px; }
+  .badge { font-size:11px; font-weight:800; padding:4px 10px; border-radius:999px; text-transform:uppercase; letter-spacing:.04em; }
+  .badge.pending { background:var(--pend-bg); color:var(--pend-tx); }
+  .badge.confirmed { background:var(--ok-bg); color:var(--ok-tx); }
+  .badge.cancelled { background:#EEF1F2; color:#8895A0; }
+  .booking .amt { margin-left:auto; font-weight:800; color:var(--navy); }
+  .booking .times { font-size:14px; color:var(--text); margin-bottom:6px; }
+  .booking .who { font-size:13px; color:var(--muted); }
+  .booking .who strong { color:var(--text); }
+  .booking .actions { display:flex; gap:10px; margin-top:14px; }
+  .act { flex:1; border:none; padding:11px; border-radius:10px; font:inherit; font-weight:700; cursor:pointer; }
+  .act-confirm { background:var(--green); color:#fff; }
+  .act-confirm:hover { background:var(--green-d); }
+  .act-cancel { background:#fff; color:var(--cancel); border:1px solid #F0C7C2; }
+  .act-cancel:hover { background:#FBE7E5; }
+
+  .empty { text-align:center; padding:50px 16px; color:var(--muted); }
+  .loading { text-align:center; padding:60px 16px; color:var(--muted); }
+  @media (max-width:520px){ .stats{ grid-template-columns:1fr; } }
+  @media (prefers-reduced-motion: reduce){ *{ transition:none !important; } }
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="loginView" class="login-wrap" style="display:none;">
+  <div class="login-card">
+    <div class="brand">
+      <img id="loginLogo" alt="" style="display:none;" />
+      <div><div class="eyebrow">Manager access</div><h1 id="loginBiz">Dashboard</h1></div>
+    </div>
+    <p class="sub">Sign in to manage your court bookings.</p>
+    <label class="fl" for="email">Email</label>
+    <input type="email" id="email" placeholder="manager@email.com" autocomplete="username" />
+    <label class="fl" for="password">Password</label>
+    <input type="password" id="password" placeholder="••••••••" autocomplete="current-password" />
+    <div class="login-err" id="loginErr"></div>
+    <button class="btn" id="signinBtn" style="margin-top:6px;">Sign in</button>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div id="dashView" style="display:none;">
+  <div class="topbar">
+    <img id="topLogo" alt="" style="display:none;" />
+    <div><div class="eyebrow">Manager Dashboard</div><h1 id="topBiz">Dashboard</h1></div>
+    <button class="signout" id="signoutBtn">Sign out</button>
+  </div>
+  <div class="container">
+    <div class="controls">
+      <div class="grp">
+        <label for="datePick">Date</label>
+        <input type="date" id="datePick" />
+      </div>
+      <div class="grp">
+        <label for="filterPick">Show</label>
+        <select id="filterPick">
+          <option value="all">All</option>
+          <option value="pending">Pending only</option>
+          <option value="confirmed">Confirmed only</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="stats">
+      <div class="stat"><div class="n" id="stPending">0</div><div class="l">Pending</div></div>
+      <div class="stat"><div class="n" id="stConfirmed">0</div><div class="l">Confirmed</div></div>
+      <div class="stat"><div class="n" id="stRevenue">₱0</div><div class="l">Confirmed revenue</div></div>
+    </div>
+
+    <div id="list"></div>
+  </div>
+</div>
+
+<div id="boot" class="loading">Loading…</div>
+
+<script>
+/* ============================================================
+   Layaw System — Manager Dashboard (Phase 4)
+   Firebase Auth login + real-time booking management.
+   ============================================================ */
+let db, auth, SETTINGS=null;
+let listUnsub=null;
+
+try { firebase.initializeApp(firebaseConfig); db=firebase.firestore(); auth=firebase.auth(); }
+catch(e){ document.getElementById("boot").textContent="Config error. Check the Firebase config at the top of this file."; }
+
+const $=(id)=>document.getElementById(id);
+function pad2(n){ return String(n).padStart(2,"0"); }
+function todayStr(){ const d=new Date(); return d.getFullYear()+"-"+pad2(d.getMonth()+1)+"-"+pad2(d.getDate()); }
+function hm2min(s){ const [h,m]=String(s).split(":").map(Number); return (h||0)*60+(m||0); }
+function hourLabel(mins){ let h=Math.floor(mins/60),m=mins%60; const ap=h>=12&&h<24?"PM":"AM"; let h12=h%12; if(h12===0)h12=12; return m===0?(h12+ap):(h12+":"+pad2(m)+ap); }
+function peso(n){ return "₱"+Number(n||0).toLocaleString("en-PH"); }
+function darken(hex,f){ hex=String(hex).replace("#",""); if(hex.length===3)hex=hex.split("").map(c=>c+c).join(""); const n=parseInt(hex,16); let r=Math.round(((n>>16)&255)*f),g=Math.round(((n>>8)&255)*f),b=Math.round((n&255)*f); return "#"+[r,g,b].map(x=>("0"+x.toString(16)).slice(-2)).join(""); }
+
+async function loadSettings(){
+  try{
+    const cfg=await db.collection("settings").doc("config").get();
+    if(cfg.exists){
+      SETTINGS=cfg.data();
+      const root=document.documentElement.style;
+      if(SETTINGS.colorPrimary){ root.setProperty("--navy",SETTINGS.colorPrimary); root.setProperty("--navy-d",SETTINGS.colorPrimaryDark||darken(SETTINGS.colorPrimary,0.68)); }
+      if(SETTINGS.colorAccent){ root.setProperty("--green",SETTINGS.colorAccent); root.setProperty("--green-d",SETTINGS.colorAccentDark||darken(SETTINGS.colorAccent,0.82)); }
+      const name=SETTINGS.businessName||"Dashboard";
+      $("loginBiz").textContent=name; $("topBiz").textContent=name; document.title=name+" — Manager";
+      if(SETTINGS.logoUrl){ [$("loginLogo"),$("topLogo")].forEach(im=>{ im.src=SETTINGS.logoUrl; im.style.display="block"; }); }
+    }
+  }catch(e){ /* settings optional for login screen */ }
+}
+
+/* ---------- Auth flow ---------- */
+auth && auth.onAuthStateChanged(user=>{
+  $("boot").style.display="none";
+  if(user){ $("loginView").style.display="none"; $("dashView").style.display="block"; startDashboard(); }
+  else { $("dashView").style.display="none"; $("loginView").style.display="grid"; if(listUnsub){listUnsub();listUnsub=null;} }
+});
+
+$("signinBtn").onclick=async ()=>{
+  const email=$("email").value.trim(), pw=$("password").value;
+  $("loginErr").textContent="";
+  if(!email||!pw){ $("loginErr").textContent="Please enter your email and password."; return; }
+  const btn=$("signinBtn"); btn.disabled=true; btn.textContent="Signing in…";
+  try{ await auth.signInWithEmailAndPassword(email,pw); }
+  catch(e){
+    const map={ "auth/invalid-email":"That email looks invalid.","auth/user-not-found":"No account found for that email.","auth/wrong-password":"Incorrect password.","auth/invalid-credential":"Email or password is incorrect.","auth/too-many-requests":"Too many attempts. Please try again later." };
+    $("loginErr").textContent=map[e.code]||"Could not sign in. Please try again.";
+  } finally { btn.disabled=false; btn.textContent="Sign in"; }
+};
+$("password").addEventListener("keydown",e=>{ if(e.key==="Enter") $("signinBtn").click(); });
+$("signoutBtn").onclick=()=>auth.signOut();
+
+/* ---------- Dashboard ---------- */
+function startDashboard(){
+  $("datePick").value=$("datePick").value||todayStr();
+  $("datePick").onchange=watchBookings;
+  $("filterPick").onchange=renderFromCache;
+  watchBookings();
+}
+
+let CACHE=[];
+function watchBookings(){
+  if(listUnsub){ listUnsub(); listUnsub=null; }
+  const date=$("datePick").value;
+  $("list").innerHTML='<div class="loading">Loading bookings…</div>';
+  listUnsub=db.collection("bookings").where("date","==",date).onSnapshot(snap=>{
+    CACHE=[]; snap.forEach(doc=>CACHE.push({id:doc.id, ...doc.data()}));
+    // newest first by createdAt if present
+    CACHE.sort((a,b)=>{ const ta=a.createdAt&&a.createdAt.seconds?a.createdAt.seconds:0; const tb=b.createdAt&&b.createdAt.seconds?b.createdAt.seconds:0; return tb-ta; });
+    renderFromCache();
+  }, err=>{ console.error(err); $("list").innerHTML='<div class="empty">Could not load bookings.</div>'; });
+}
+
+function slotsLabel(slots){
+  const step=Number(SETTINGS&&SETTINGS.slotMinutes||60);
+  return (slots||[]).map(s=>{ const m=hm2min(s); return hourLabel(m)+"-"+hourLabel(m+step); }).join(", ");
+}
+
+function renderFromCache(){
+  const filter=$("filterPick").value;
+  const list=$("list"); list.innerHTML="";
+
+  let pending=0, confirmed=0, revenue=0;
+  CACHE.forEach(b=>{
+    if(b.status==="pending") pending++;
+    if(b.status==="confirmed"){ confirmed++; revenue+=Number(b.amount||0); }
+  });
+  $("stPending").textContent=pending;
+  $("stConfirmed").textContent=confirmed;
+  $("stRevenue").textContent=peso(revenue);
+
+  const shown=CACHE.filter(b=>{
+    if(filter==="pending") return b.status==="pending";
+    if(filter==="confirmed") return b.status==="confirmed";
+    return b.status!=="cancelled"; // "all" hides cancelled
+  });
+
+  if(!shown.length){ list.innerHTML='<div class="empty">No bookings for this date.</div>'; return; }
+
+  shown.forEach(b=>{
+    const card=document.createElement("div"); card.className="booking";
+    const status=b.status||"pending";
+    let actions="";
+    if(status==="pending") actions='<button class="act act-confirm" data-id="'+b.id+'" data-act="confirm">Confirm</button><button class="act act-cancel" data-id="'+b.id+'" data-act="cancel">Cancel</button>';
+    else if(status==="confirmed") actions='<button class="act act-cancel" data-id="'+b.id+'" data-act="cancel">Cancel booking</button>';
+
+    card.innerHTML =
+      '<div class="row1"><span class="court">'+(b.court||"Court")+'</span>'+
+      '<span class="badge '+status+'">'+status+'</span>'+
+      '<span class="amt">'+peso(b.amount)+'</span></div>'+
+      '<div class="times">'+slotsLabel(b.slots)+'</div>'+
+      '<div class="who"><strong>'+(b.bookerName||"—")+'</strong> · '+(b.contact||"—")+(b.email?(' · '+b.email):'')+'</div>'+
+      (actions?('<div class="actions">'+actions+'</div>'):'');
+    list.appendChild(card);
+  });
+
+  list.querySelectorAll(".act").forEach(btn=>{
+    btn.onclick=async ()=>{
+      const id=btn.getAttribute("data-id"), act=btn.getAttribute("data-act");
+      if(act==="cancel" && !confirm("Cancel this booking? The slots will reopen.")) return;
+      btn.disabled=true; btn.textContent="…";
+      try{ await db.collection("bookings").doc(id).update({ status: act==="confirm"?"confirmed":"cancelled" }); }
+      catch(e){ console.error(e); alert("Could not update. Please try again."); btn.disabled=false; }
+    };
+  });
+}
+
+loadSettings();
+</script>
+</body>
+</html>
