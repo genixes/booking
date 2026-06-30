@@ -16,7 +16,6 @@
     storageBucket: "layaw-pickleball.firebasestorage.app",
     messagingSenderId: "940525720373",
     appId: "1:940525720373:web:dfbe3e353e1402bf27727c"
-
   };
 </script>
 
@@ -56,22 +55,16 @@
   .btn { width:100%; background:var(--green); color:#fff; border:none; padding:14px; border-radius:12px; font:inherit; font-weight:700; font-size:16px; cursor:pointer; transition:background .15s; }
   .btn:hover { background:var(--green-d); }
   .btn:disabled { background:#B7C6C9; cursor:not-allowed; }
-  .btn-navy { background:var(--navy); } .btn-navy:hover { background:var(--navy-d); }
   .login-err { color:var(--cancel); font-size:13px; font-weight:600; margin-top:12px; min-height:18px; }
 
-  .topbar { background:var(--navy); color:#fff; padding:14px 18px; display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+  .topbar { background:var(--navy); color:#fff; padding:14px 18px; display:flex; align-items:center; gap:10px; }
   .topbar img { width:38px; height:38px; border-radius:9px; object-fit:cover; }
   .topbar h1 { font-size:16px; font-weight:800; line-height:1.15; }
   .topbar .eyebrow { font-size:10px; letter-spacing:.14em; text-transform:uppercase; opacity:.7; font-weight:700; }
   .topbar .spacer { margin-left:auto; }
-  .nav { display:inline-flex; background:rgba(255,255,255,.12); border-radius:10px; padding:3px; }
-  .nav button { border:none; background:transparent; color:rgba(255,255,255,.7); padding:8px 14px; border-radius:8px; font:inherit; font-weight:700; font-size:13px; cursor:pointer; }
-  .nav button.on { background:#fff; color:var(--navy); }
-  .bell { position:relative; background:rgba(255,255,255,.14); border:none; color:#fff; width:42px; height:42px; border-radius:10px; cursor:pointer; font-size:18px; display:grid; place-items:center; }
-  .bell:hover { background:rgba(255,255,255,.24); }
-  .bell .dot { position:absolute; top:-5px; right:-5px; background:var(--cancel); color:#fff; font-size:11px; font-weight:800; min-width:20px; height:20px; border-radius:999px; display:grid; place-items:center; padding:0 5px; border:2px solid var(--navy); }
-  .signout { background:rgba(255,255,255,.14); color:#fff; border:none; padding:10px 14px; border-radius:10px; font:inherit; font-weight:600; cursor:pointer; }
-  .signout:hover { background:rgba(255,255,255,.24); }
+  .tb-btn { background:rgba(255,255,255,.14); border:none; color:#fff; padding:10px 13px; border-radius:10px; font:inherit; font-weight:600; cursor:pointer; display:grid; place-items:center; position:relative; }
+  .tb-btn:hover { background:rgba(255,255,255,.24); }
+  .tb-btn .dot { position:absolute; top:-5px; right:-5px; background:var(--cancel); color:#fff; font-size:11px; font-weight:800; min-width:20px; height:20px; border-radius:999px; display:grid; place-items:center; padding:0 5px; border:2px solid var(--navy); }
 
   .container { max-width:920px; margin:0 auto; padding:18px 16px 60px; }
   .card { background:var(--card); border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow); padding:18px; }
@@ -108,15 +101,17 @@
   .badge.confirmed { background:var(--ok-bg); color:var(--ok-tx); }
   .badge.cancelled { background:#EEF1F2; color:#8895A0; }
   .badge.active { background:var(--ok-bg); color:var(--ok-tx); }
-  .badge.inactive { background:#EEF1F2; color:#8895A0; }
+  .badge.disabled { background:#EEF1F2; color:#8895A0; }
   .booking .amt { margin-left:auto; font-weight:800; color:var(--navy); }
   .booking .times { font-size:14px; margin-bottom:6px; }
   .booking .who { font-size:13px; color:var(--muted); }
   .booking .who strong { color:var(--text); }
   .booking .actions { display:flex; gap:10px; margin-top:14px; }
   .act { flex:1; border:none; padding:11px; border-radius:10px; font:inherit; font-weight:700; cursor:pointer; }
-  .act-confirm { background:var(--green); color:#fff; } .act-confirm:hover { background:var(--green-d); }
-  .act-cancel { background:#fff; color:var(--cancel); border:1px solid #F0C7C2; } .act-cancel:hover { background:#FBE7E5; }
+  .act-confirm { background:var(--green); color:#fff; }
+  .act-confirm:hover { background:var(--green-d); }
+  .act-cancel { background:#fff; color:var(--cancel); border:1px solid #F0C7C2; }
+  .act-cancel:hover { background:#FBE7E5; }
 
   .table-scroll { overflow-x:auto; }
   table.sched { width:max-content; min-width:100%; border-collapse:separate; border-spacing:0; }
@@ -133,16 +128,6 @@
   table.sched td.book-cell.confirmed .stt { color:var(--conf-tx); }
   table.sched td.book-cell.pending .stt { color:var(--pend-tx); }
   .scell-open { background:var(--open-bg); color:var(--open-tx); border-radius:9px; padding:12px 4px; text-align:center; font-size:13px; font-weight:700; }
-
-  /* Admins */
-  .admin-row { display:flex; align-items:center; gap:12px; border:1px solid var(--line); border-radius:12px; padding:14px; margin-bottom:10px; }
-  .admin-row .ai { flex:1; }
-  .admin-row .ai .nm { font-weight:800; color:var(--navy); }
-  .admin-row .ai .em { font-size:12px; color:var(--muted); }
-  .pin-field { letter-spacing:.3em; }
-  .help { font-size:13px; color:var(--muted); line-height:1.5; margin-top:8px; }
-  .setup-box { background:var(--pend-bg); color:var(--pend-tx); border-radius:12px; padding:16px; font-size:14px; line-height:1.6; }
-  .setup-box code { background:#fff; padding:2px 8px; border-radius:6px; font-weight:700; }
 
   .empty { text-align:center; padding:40px 16px; color:var(--muted); }
   .loading { text-align:center; padding:50px 16px; color:var(--muted); }
@@ -163,8 +148,10 @@
 
   .overlay { position:fixed; inset:0; background:rgba(14,49,64,.55); display:none; place-items:center; padding:16px; z-index:50; }
   .overlay.show { display:grid; }
-  .modal { background:#fff; border-radius:var(--radius); padding:24px; width:100%; max-width:440px; box-shadow:var(--shadow); max-height:90vh; overflow-y:auto; }
+  .modal { background:#fff; border-radius:var(--radius); padding:24px; width:100%; max-width:460px; box-shadow:var(--shadow); max-height:90vh; overflow-y:auto; }
   .modal h3 { font-size:18px; color:var(--navy); margin-bottom:4px; }
+  .modal h4 { font-size:14px; color:var(--navy); margin:18px 0 10px; }
+  .modal .sub { font-size:13px; color:var(--muted); margin-bottom:14px; }
   .modal .mrow { font-size:14px; margin:8px 0; }
   .modal .mrow span { color:var(--muted); }
   .modal-actions { display:flex; gap:10px; margin-top:14px; }
@@ -172,7 +159,18 @@
   .modal-actions .act { flex:1; }
   #receiptImg { width:100%; border-radius:10px; }
 
-  .toast { position:fixed; left:50%; bottom:24px; transform:translateX(-50%); background:var(--navy-d); color:#fff; padding:14px 20px; border-radius:12px; font-weight:600; box-shadow:var(--shadow); opacity:0; pointer-events:none; transition:opacity .2s; z-index:60; max-width:90%; text-align:center; }
+  .admin-row { display:flex; align-items:center; gap:10px; padding:12px 0; border-bottom:1px solid var(--line); }
+  .admin-row .an { font-weight:700; }
+  .admin-row .ar { margin-left:auto; display:flex; gap:8px; align-items:center; }
+  .mini-btn { border:1px solid var(--line); background:#fff; border-radius:8px; padding:7px 12px; font:inherit; font-weight:700; font-size:12px; cursor:pointer; color:var(--navy); }
+  .mini-btn.danger { color:var(--cancel); border-color:#F0C7C2; }
+  .mini-btn:hover { border-color:var(--green); }
+  .add-row { display:flex; gap:8px; }
+  .add-row input { flex:1; }
+  .add-row input.pin { max-width:130px; }
+  .form-err { color:var(--cancel); font-size:13px; font-weight:600; margin-top:8px; min-height:16px; }
+
+  .toast { position:fixed; left:50%; bottom:24px; transform:translateX(-50%); background:var(--navy-d); color:#fff; padding:14px 20px; border-radius:12px; font-weight:600; box-shadow:var(--shadow); opacity:0; pointer-events:none; transition:opacity .2s; z-index:60; }
   .toast.show { opacity:1; }
   @media (prefers-reduced-motion: reduce){ *{ transition:none !important; } }
 </style>
@@ -197,30 +195,12 @@
     <img id="topLogo" alt="" style="display:none;" />
     <div><div class="eyebrow">Owner Dashboard</div><h1 id="topBiz">Dashboard</h1></div>
     <div class="spacer"></div>
-    <div class="nav"><button id="navBookings" class="on">Bookings</button><button id="navAdmins">Admins</button></div>
-    <button class="bell" id="bellBtn">🔔<span class="dot" id="bellDot" style="display:none;">0</span></button>
-    <button class="signout" id="signoutBtn">Sign out</button>
+    <button class="tb-btn" id="adminsBtn">👥 Admins</button>
+    <button class="tb-btn" id="bellBtn">🔔<span class="dot" id="bellDot" style="display:none;">0</span></button>
+    <button class="tb-btn" id="signoutBtn">Sign out</button>
   </div>
 
-  <!-- Setup notice if owner doc missing -->
-  <div class="container" id="setupView" style="display:none;">
-    <div class="card">
-      <h3>Finish owner setup</h3>
-      <div class="setup-box">
-        To activate your owner account, create one document in Firestore:<br><br>
-        Collection <code>admins</code> → Document ID <code id="ownerUid">—</code><br><br>
-        Fields:<br>
-        • <code>role</code> (string) = <code>owner</code><br>
-        • <code>active</code> (boolean) = <code>true</code><br>
-        • <code>name</code> (string) = your name<br><br>
-        Then refresh this page.
-      </div>
-      <button class="btn-ghost" id="copyUid" style="width:100%;margin-top:14px;padding:12px;">Copy my UID</button>
-    </div>
-  </div>
-
-  <!-- BOOKINGS -->
-  <div class="container" id="bookingsView">
+  <div class="container">
     <div class="card">
       <h3>Select a date</h3>
       <div class="cal-nav">
@@ -241,29 +221,15 @@
     <div class="card">
       <div class="view-head">
         <h3 id="dayTitle">Bookings</h3>
-        <div class="toggle"><button id="tabList" class="on">List</button><button id="tabGrid">Grid</button></div>
+        <div class="toggle">
+          <button id="tabList" class="on">List</button>
+          <button id="tabGrid">Grid</button>
+        </div>
       </div>
       <div id="listView"></div>
       <div id="gridView" style="display:none;">
         <div class="table-scroll"><table class="sched"><thead><tr id="schedHead"></tr></thead><tbody id="schedBody"></tbody></table></div>
       </div>
-    </div>
-  </div>
-
-  <!-- ADMINS -->
-  <div class="container" id="adminsView" style="display:none;">
-    <div class="card" style="margin-bottom:16px;">
-      <h3>Add an admin</h3>
-      <label class="fl">Admin name</label>
-      <input type="text" id="newAdminName" placeholder="e.g. Maria" />
-      <label class="fl" style="margin-top:12px;">6-digit PIN</label>
-      <input type="password" id="newAdminPin" class="pin-field" inputmode="numeric" maxlength="6" placeholder="••••••" />
-      <button class="btn btn-navy" id="addAdminBtn" style="margin-top:16px;">Add admin</button>
-      <p class="help">The admin signs in at the admin page using this <strong>name</strong> and <strong>PIN</strong>. PINs can't be viewed later — share it with them now. To reset a PIN, remove the admin and add them again.</p>
-    </div>
-    <div class="card">
-      <h3>Admins</h3>
-      <div id="adminsList"><div class="empty">Loading…</div></div>
     </div>
   </div>
 </div>
@@ -277,18 +243,34 @@
 <div class="overlay" id="detailOverlay"><div class="modal" id="detailModal"></div></div>
 <div class="overlay" id="receiptOverlay"><div class="modal" style="max-width:480px;"><h3 style="margin-bottom:14px;">Payment receipt</h3><img id="receiptImg" alt="receipt" /><button class="btn-ghost" id="receiptClose" style="width:100%;margin-top:16px;padding:13px;">Close</button></div></div>
 
+<div class="overlay" id="adminsOverlay"><div class="modal">
+  <h3>Manage admins</h3>
+  <p class="sub">Admins sign in with their <strong>name</strong> and a <strong>6-digit PIN</strong> on the admin page.</p>
+  <div id="adminsList"><div class="empty">Loading…</div></div>
+  <h4>Add an admin</h4>
+  <div class="add-row">
+    <input type="text" id="newAdminName" placeholder="Admin name" />
+    <input type="tel" id="newAdminPin" class="pin" placeholder="6-digit PIN" maxlength="6" inputmode="numeric" />
+  </div>
+  <div class="form-err" id="adminErr"></div>
+  <div class="modal-actions">
+    <button class="btn-ghost" id="adminsClose">Close</button>
+    <button class="act act-confirm" id="addAdminBtn">Add admin</button>
+  </div>
+</div></div>
+
 <div id="boot" class="loading">Loading…</div>
 <div class="toast" id="toast"></div>
 
 <script>
 /* ============================================================
    Layaw System — Owner Dashboard
-   Email login + booking management + admin management.
+   Owner email login + full booking dashboard + admin management.
    ============================================================ */
 let db, auth, secondaryApp=null, SETTINGS=null, COURTS=[];
-let dayUnsub=null, pendingUnsub=null, adminsUnsub=null;
+let dayUnsub=null, pendingUnsub=null;
 let viewYear, viewMonth, selectedDate=null, currentView="list";
-let DAY=[], PENDING=[], CONTACTS={}, OWNER_OK=false;
+let DAY=[], PENDING=[], CONTACTS={};
 
 try { firebase.initializeApp(firebaseConfig); db=firebase.firestore(); auth=firebase.auth(); }
 catch(e){ document.getElementById("boot").textContent="Config error. Check the Firebase config at the top of this file."; }
@@ -303,18 +285,24 @@ function hourLabel(mins){ let h=Math.floor(mins/60),m=mins%60; const ap=h>=12&&h
 function slotsLabel(slots){ const step=Number(SETTINGS&&SETTINGS.slotMinutes||60); return (slots||[]).slice().sort().map(s=>{const m=hm2min(s); return hourLabel(m)+"-"+hourLabel(m+step);}).join(", "); }
 function peso(n){ return "₱"+Number(n||0).toLocaleString("en-PH"); }
 function niceDate(s){ return parseDstr(s).toLocaleDateString("en-US",{weekday:"short",month:"short",day:"numeric"}); }
-function toast(m){ const t=$("toast"); t.textContent=m; t.classList.add("show"); setTimeout(()=>t.classList.remove("show"),2800); }
+function toast(m){ const t=$("toast"); t.textContent=m; t.classList.add("show"); setTimeout(()=>t.classList.remove("show"),2600); }
 function darken(hex,f){ hex=String(hex).replace("#",""); if(hex.length===3)hex=hex.split("").map(c=>c+c).join(""); const n=parseInt(hex,16); let r=Math.round(((n>>16)&255)*f),g=Math.round(((n>>8)&255)*f),b=Math.round((n&255)*f); return "#"+[r,g,b].map(x=>("0"+x.toString(16)).slice(-2)).join(""); }
-function adminEmail(name){ const slug=String(name||"").trim().toLowerCase().replace(/[^a-z0-9]+/g,""); return slug?(slug+"@courtadmin.app"):""; }
 
 function orderGroups(list){ const g={}, order=[]; list.forEach(b=>{ const k=b.bookingId||("__"+b.id); if(!g[k]){ g[k]=[]; order.push(k); } g[k].push(b); }); return order.map(k=>g[k]); }
 function groupStatus(grp){ if(grp.some(b=>b.status==="pending"))return "pending"; if(grp.some(b=>b.status==="confirmed"))return "confirmed"; return "cancelled"; }
 function groupKey(grp){ return grp[0].bookingId||grp[0].id; }
-async function ensureContacts(list){ const ids=[...new Set(list.map(b=>b.bookingId).filter(id=>id && !(id in CONTACTS)))]; if(!ids.length) return; await Promise.all(ids.map(async id=>{ try{ const doc=await db.collection("bookingContacts").doc(id).get(); CONTACTS[id]=doc.exists?doc.data():{}; }catch(e){ CONTACTS[id]={}; } })); }
+async function ensureContacts(list){
+  const ids=[...new Set(list.map(b=>b.bookingId).filter(id=>id && !(id in CONTACTS)))];
+  if(!ids.length) return;
+  await Promise.all(ids.map(async id=>{ try{ const doc=await db.collection("bookingContacts").doc(id).get(); CONTACTS[id]=doc.exists?doc.data():{}; }catch(e){ CONTACTS[id]={}; } }));
+}
 function cinfo(b){ return (b.bookingId && CONTACTS[b.bookingId]) ? CONTACTS[b.bookingId] : {}; }
 function nameOf(b){ return cinfo(b).bookerName || b.bookerName || "—"; }
 function contactOf(b){ return cinfo(b).contact || b.contact || "—"; }
 function emailOf(b){ return cinfo(b).email || b.email || ""; }
+
+function adminSlug(name){ return String(name).toLowerCase().trim().replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"") || "admin"; }
+function adminEmail(name){ return "admin-"+adminSlug(name)+"@"+firebaseConfig.authDomain; }
 
 async function loadBase(){
   try{
@@ -325,7 +313,7 @@ async function loadBase(){
       if(SETTINGS.colorPrimary){ root.setProperty("--navy",SETTINGS.colorPrimary); root.setProperty("--navy-d",SETTINGS.colorPrimaryDark||darken(SETTINGS.colorPrimary,0.68)); }
       if(SETTINGS.colorAccent){ root.setProperty("--green",SETTINGS.colorAccent); root.setProperty("--green-d",SETTINGS.colorAccentDark||darken(SETTINGS.colorAccent,0.82)); }
       const name=SETTINGS.businessName||"Dashboard";
-      $("loginBiz").textContent=name+" — Owner"; $("topBiz").textContent=name; document.title=name+" — Owner";
+      $("loginBiz").textContent=name; $("topBiz").textContent=name; document.title=name+" — Owner";
       if(SETTINGS.logoUrl){ [$("loginLogo"),$("topLogo")].forEach(im=>{ im.src=SETTINGS.logoUrl; im.style.display="block"; }); }
     }
     const cs=await db.collection("courts").get();
@@ -334,22 +322,10 @@ async function loadBase(){
   }catch(e){ console.warn(e); }
 }
 
-/* ---------- Auth (owner = email/password) ---------- */
-auth && auth.onAuthStateChanged(async user=>{
+auth && auth.onAuthStateChanged(user=>{
   $("boot").style.display="none";
-  if(user){
-    if(!SETTINGS) await loadBase();
-    // verify owner is set up
-    let isOwner=false;
-    try{ const a=await db.collection("admins").doc(user.uid).get(); isOwner = a.exists && a.data().active!==false && a.data().role==="owner"; }catch(e){ isOwner=false; }
-    $("loginView").style.display="none"; $("dashView").style.display="block";
-    if(!isOwner){ $("ownerUid").textContent=user.uid; $("setupView").style.display="block"; $("bookingsView").style.display="none"; $("adminsView").style.display="none"; return; }
-    $("setupView").style.display="none";
-    startDashboard();
-  } else {
-    $("dashView").style.display="none"; $("loginView").style.display="grid";
-    if(dayUnsub)dayUnsub(); if(pendingUnsub)pendingUnsub(); if(adminsUnsub)adminsUnsub();
-  }
+  if(user){ $("loginView").style.display="none"; $("dashView").style.display="block"; startDashboard(); }
+  else { $("dashView").style.display="none"; $("loginView").style.display="grid"; if(dayUnsub){dayUnsub();} if(pendingUnsub){pendingUnsub();} }
 });
 $("signinBtn").onclick=async ()=>{
   const email=$("email").value.trim(), pw=$("password").value; $("loginErr").textContent="";
@@ -361,18 +337,14 @@ $("signinBtn").onclick=async ()=>{
 };
 $("password").addEventListener("keydown",e=>{ if(e.key==="Enter") $("signinBtn").click(); });
 $("signoutBtn").onclick=()=>auth.signOut();
-$("copyUid").onclick=()=>{ navigator.clipboard.writeText(auth.currentUser.uid).then(()=>toast("UID copied!")); };
 
-/* ---------- Nav ---------- */
-$("navBookings").onclick=()=>{ $("navBookings").classList.add("on"); $("navAdmins").classList.remove("on"); $("bookingsView").style.display="block"; $("adminsView").style.display="none"; };
-$("navAdmins").onclick=()=>{ $("navAdmins").classList.add("on"); $("navBookings").classList.remove("on"); $("adminsView").style.display="block"; $("bookingsView").style.display="none"; watchAdmins(); };
-
-function startDashboard(){
+async function startDashboard(){
+  if(!SETTINGS) await loadBase();
   const t=today(); viewYear=t.getFullYear(); viewMonth=t.getMonth(); selectedDate=dstr(t);
-  renderCalendar(); renderSchedHead(); watchDay(); watchPending();
+  renderCalendar(); renderSchedHead();
+  watchDay(); watchPending();
 }
 
-/* ---------- Calendar / Bookings (same as admin) ---------- */
 function renderCalendar(){
   const mn=["January","February","March","April","May","June","July","August","September","October","November","December"];
   $("calMonth").textContent=mn[viewMonth]+" "+viewYear;
@@ -402,7 +374,8 @@ function watchDay(){
     let p=0,c=0; groups.forEach(grp=>{ const s=groupStatus(grp); if(s==="pending")p++; else if(s==="confirmed")c++; });
     let rev=0; DAY.forEach(b=>{ if(b.status==="confirmed") rev+=Number(b.amount||0); });
     $("stPending").textContent=p; $("stConfirmed").textContent=c; $("stRevenue").textContent=peso(rev);
-    await ensureContacts(DAY); renderView();
+    await ensureContacts(DAY);
+    renderView();
   }, err=>{ console.error(err); $("listView").innerHTML='<div class="empty">Could not load bookings.</div>'; });
 }
 function watchPending(){
@@ -410,8 +383,10 @@ function watchPending(){
   pendingUnsub=db.collection("bookings").where("status","==","pending").onSnapshot(async snap=>{
     PENDING=[]; snap.forEach(d=>PENDING.push({id:d.id, ...d.data()}));
     PENDING.sort((a,b)=>{ if(a.date!==b.date) return a.date<b.date?-1:1; return (a.startTime||"").localeCompare(b.startTime||""); });
-    const n=orderGroups(PENDING).length; const dot=$("bellDot"); if(n>0){ dot.style.display="grid"; dot.textContent=n>99?"99+":n; } else dot.style.display="none";
-    await ensureContacts(PENDING); renderNotif();
+    const n=orderGroups(PENDING).length;
+    const dot=$("bellDot"); if(n>0){ dot.style.display="grid"; dot.textContent=n>99?"99+":n; } else dot.style.display="none";
+    await ensureContacts(PENDING);
+    renderNotif();
   }, err=>console.error(err));
 }
 
@@ -425,9 +400,12 @@ function renderList(){
   const groups=orderGroups(DAY.filter(b=>b.status!=="cancelled"));
   if(!groups.length){ wrap.innerHTML='<div class="empty">No bookings for this date.</div>'; return; }
   groups.forEach(grp=>{
-    const st=groupStatus(grp); const courts=[...new Set(grp.map(b=>b.court))].sort(); const total=grp.reduce((s,b)=>s+Number(b.amount||0),0);
+    const st=groupStatus(grp);
+    const courts=[...new Set(grp.map(b=>b.court))].sort();
+    const total=grp.reduce((s,b)=>s+Number(b.amount||0),0);
     const first=grp[0]; const key=groupKey(grp);
-    const slotSets=grp.map(b=>(b.slots||[]).slice().sort().join(",")); const allSame=slotSets.every(s=>s===slotSets[0]);
+    const slotSets=grp.map(b=>(b.slots||[]).slice().sort().join(","));
+    const allSame=slotSets.every(s=>s===slotSets[0]);
     let timesHtml = allSame ? '<div class="times">'+slotsLabel(first.slots)+'</div>' : grp.map(b=>'<div class="times"><strong>'+b.court+'</strong> · '+slotsLabel(b.slots)+'</div>').join("");
     let acts=""; if(st==="pending") acts='<button class="act act-confirm" data-key="'+key+'" data-act="confirm">Confirm</button><button class="act act-cancel" data-key="'+key+'" data-act="cancel">Cancel</button>'; else if(st==="confirmed") acts='<button class="act act-cancel" data-key="'+key+'" data-act="cancel">Cancel booking</button>';
     const card=document.createElement("div"); card.className="booking"; const em=emailOf(first);
@@ -445,7 +423,12 @@ function renderGrid(){
   const map={}; DAY.forEach(b=>{ if(b.status==="cancelled")return; (b.slots||[]).forEach(s=>map[b.court+"|"+s]=b); });
   const startAt={}, skip={};
   COURTS.forEach(c=>{ startAt[c.name]={}; skip[c.name]=new Set(); let i=0;
-    while(i<slots.length){ const b=map[c.name+"|"+slots[i].key]; if(!b){ i++; continue; } let j=i+1; while(j<slots.length){ const b2=map[c.name+"|"+slots[j].key]; if(b2 && b2.id===b.id){ j++; } else break; } startAt[c.name][i]={booking:b,len:j-i}; for(let k=i+1;k<j;k++) skip[c.name].add(k); i=j; }
+    while(i<slots.length){
+      const b=map[c.name+"|"+slots[i].key];
+      if(!b){ i++; continue; }
+      let j=i+1; while(j<slots.length){ const b2=map[c.name+"|"+slots[j].key]; if(b2 && b2.id===b.id){ j++; } else break; }
+      startAt[c.name][i]={booking:b,len:j-i}; for(let k=i+1;k<j;k++) skip[c.name].add(k); i=j;
+    }
   });
   const body=$("schedBody"); body.innerHTML="";
   slots.forEach((slot,ri)=>{
@@ -454,8 +437,16 @@ function renderGrid(){
     COURTS.forEach(c=>{
       if(skip[c.name].has(ri)) return;
       const seg=startAt[c.name][ri];
-      if(seg){ const b=seg.booking, st=b.status||"pending"; const td=document.createElement("td"); td.className="cell book-cell "+st; td.rowSpan=seg.len; td.innerHTML='<div class="nm">'+nameOf(b)+'</div><div class="stt">'+st.toUpperCase()+'</div>'; td.onclick=()=>openDetail(b); tr.appendChild(td); }
-      else { const td=document.createElement("td"); td.className="cell"; const cell=document.createElement("div"); cell.className="scell-open"; cell.textContent="Open"; td.appendChild(cell); tr.appendChild(td); }
+      if(seg){
+        const b=seg.booking, st=b.status||"pending";
+        const td=document.createElement("td"); td.className="cell book-cell "+st; td.rowSpan=seg.len;
+        td.innerHTML='<div class="nm">'+nameOf(b)+'</div><div class="stt">'+st.toUpperCase()+'</div>';
+        td.onclick=()=>openDetail(b); tr.appendChild(td);
+      } else {
+        const td=document.createElement("td"); td.className="cell";
+        const cell=document.createElement("div"); cell.className="scell-open"; cell.textContent="Open";
+        td.appendChild(cell); tr.appendChild(td);
+      }
     });
     body.appendChild(tr);
   });
@@ -463,10 +454,13 @@ function renderGrid(){
 
 function openDetail(b){
   const grp = b.bookingId ? DAY.filter(x=>x.bookingId===b.bookingId && x.status!=="cancelled") : [b];
-  const list = grp.length?grp:[b]; const st=groupStatus(list);
-  const courts=[...new Set(list.map(x=>x.court))].sort().join(", "); const total=list.reduce((s,x)=>s+Number(x.amount||0),0);
+  const list = grp.length?grp:[b];
+  const st=groupStatus(list);
+  const courts=[...new Set(list.map(x=>x.court))].sort().join(", ");
+  const total=list.reduce((s,x)=>s+Number(x.amount||0),0);
   const first=list[0]; const key=first.bookingId||first.id; const rid=first.bookingId||first.id;
-  const slotSets=list.map(x=>(x.slots||[]).slice().sort().join(",")); const allSame=slotSets.every(s=>s===slotSets[0]);
+  const slotSets=list.map(x=>(x.slots||[]).slice().sort().join(","));
+  const allSame=slotSets.every(s=>s===slotSets[0]);
   const timesHtml = allSame ? '<div class="mrow"><span>Time:</span> '+slotsLabel(first.slots)+'</div>' : list.map(x=>'<div class="mrow"><span>'+x.court+':</span> '+slotsLabel(x.slots)+'</div>').join("");
   let acts=""; if(st==="pending") acts='<button class="act act-confirm" data-key="'+key+'" data-act="confirm">Confirm</button><button class="act act-cancel" data-key="'+key+'" data-act="cancel">Cancel</button>'; else if(st==="confirmed") acts='<button class="act act-cancel" data-key="'+key+'" data-act="cancel">Cancel booking</button>';
   $("detailModal").innerHTML='<h3>'+courts+' · <span class="badge '+st+'">'+st+'</span></h3>'+
@@ -484,7 +478,14 @@ function openDetail(b){
   $("detailModal").querySelectorAll(".act").forEach(btn=>btn.onclick=async ()=>{ await doAction(btn.getAttribute("data-key"),btn.getAttribute("data-act")); $("detailOverlay").classList.remove("show"); });
 }
 $("detailOverlay").onclick=(e)=>{ if(e.target===$("detailOverlay")) $("detailOverlay").classList.remove("show"); };
-async function viewReceipt(rid){ try{ const doc=await db.collection("receipts").doc(rid).get(); if(doc.exists && doc.data().image){ $("receiptImg").src=doc.data().image; $("receiptOverlay").classList.add("show"); } else toast("No receipt was uploaded for this booking."); }catch(e){ console.error(e); toast("Could not load receipt."); } }
+
+async function viewReceipt(rid){
+  try{
+    const doc=await db.collection("receipts").doc(rid).get();
+    if(doc.exists && doc.data().image){ $("receiptImg").src=doc.data().image; $("receiptOverlay").classList.add("show"); }
+    else toast("No receipt was uploaded for this booking.");
+  }catch(e){ console.error(e); toast("Could not load receipt."); }
+}
 $("receiptClose").onclick=()=>$("receiptOverlay").classList.remove("show");
 $("receiptOverlay").onclick=(e)=>{ if(e.target===$("receiptOverlay")) $("receiptOverlay").classList.remove("show"); };
 
@@ -493,7 +494,9 @@ function renderNotif(){
   if(!PENDING.length){ body.innerHTML='<div class="empty">No pending bookings. You\'re all caught up! 🎾</div>'; return; }
   const groups=orderGroups(PENDING); body.innerHTML="";
   groups.forEach(grp=>{
-    const first=grp[0], key=groupKey(grp); const courts=[...new Set(grp.map(b=>b.court))].sort().join(", "); const total=grp.reduce((s,b)=>s+Number(b.amount||0),0);
+    const first=grp[0], key=groupKey(grp);
+    const courts=[...new Set(grp.map(b=>b.court))].sort().join(", ");
+    const total=grp.reduce((s,b)=>s+Number(b.amount||0),0);
     const it=document.createElement("div"); it.className="nitem";
     it.innerHTML='<div class="nt">'+courts+' · '+niceDate(first.date)+'</div><div class="nd">'+slotsLabel(first.slots)+' · '+nameOf(first)+' · '+peso(total)+'</div><div class="nacts"><button class="act-confirm" data-key="'+key+'" data-act="confirm">Confirm</button><button class="act-cancel" data-key="'+key+'" data-act="cancel">Cancel</button></div>';
     body.appendChild(it);
@@ -509,51 +512,62 @@ async function doAction(key,act){
   const pool=DAY.concat(PENDING);
   let ids=[...new Set(pool.filter(b=>(b.bookingId||b.id)===key || b.bookingId===key).map(b=>b.id))];
   if(!ids.length) ids=[key];
-  try{ const batch=db.batch(); ids.forEach(id=>batch.update(db.collection("bookings").doc(id),{ status: act==="confirm"?"confirmed":"cancelled" })); await batch.commit(); toast(act==="confirm"?"Booking confirmed.":"Booking cancelled."); }
-  catch(e){ console.error(e); toast("Could not update. Please try again."); }
+  try{
+    const batch=db.batch();
+    ids.forEach(id=>batch.update(db.collection("bookings").doc(id),{ status: act==="confirm"?"confirmed":"cancelled" }));
+    await batch.commit();
+    toast(act==="confirm"?"Booking confirmed.":"Booking cancelled.");
+  }catch(e){ console.error(e); toast("Could not update. Please try again."); }
 }
 
-/* ---------- Admin management ---------- */
-function getSecondary(){ if(!secondaryApp){ secondaryApp = firebase.apps.find(a=>a.name==="secondary") || firebase.initializeApp(firebaseConfig,"secondary"); } return secondaryApp; }
-function watchAdmins(){
-  if(adminsUnsub) return;
-  adminsUnsub=db.collection("admins").onSnapshot(snap=>{
-    const admins=[]; snap.forEach(d=>admins.push({id:d.id, ...d.data()}));
-    renderAdmins(admins);
-  }, err=>{ console.error(err); $("adminsList").innerHTML='<div class="empty">Could not load admins.</div>'; });
+/* ---------- Manage admins ---------- */
+function getSecondary(){ if(!secondaryApp) secondaryApp=firebase.initializeApp(firebaseConfig,"secondary"); return secondaryApp; }
+$("adminsBtn").onclick=()=>{ $("adminsOverlay").classList.add("show"); $("adminErr").textContent=""; loadAdmins(); };
+$("adminsClose").onclick=()=>$("adminsOverlay").classList.remove("show");
+$("adminsOverlay").onclick=(e)=>{ if(e.target===$("adminsOverlay")) $("adminsOverlay").classList.remove("show"); };
+
+async function loadAdmins(){
+  const wrap=$("adminsList"); wrap.innerHTML='<div class="empty">Loading…</div>';
+  try{
+    const snap=await db.collection("admins").get();
+    const rows=[]; snap.forEach(d=>rows.push({uid:d.id, ...d.data()}));
+    rows.sort((a,b)=>String(a.name||"").localeCompare(String(b.name||"")));
+    if(!rows.length){ wrap.innerHTML='<div class="empty">No admins yet. Add one below.</div>'; return; }
+    wrap.innerHTML="";
+    rows.forEach(r=>{
+      const active=r.active!==false;
+      const row=document.createElement("div"); row.className="admin-row";
+      row.innerHTML='<div><div class="an">'+(r.name||"Admin")+'</div></div><div class="ar"><span class="badge '+(active?"active":"disabled")+'">'+(active?"Active":"Disabled")+'</span><button class="mini-btn '+(active?"danger":"")+'" data-uid="'+r.uid+'" data-act="'+(active?"disable":"enable")+'">'+(active?"Disable":"Enable")+'</button></div>';
+      wrap.appendChild(row);
+    });
+    wrap.querySelectorAll(".mini-btn").forEach(btn=>btn.onclick=()=>toggleAdmin(btn.getAttribute("data-uid"),btn.getAttribute("data-act")));
+  }catch(e){ console.error(e); wrap.innerHTML='<div class="empty">Could not load admins.</div>'; }
 }
-function renderAdmins(admins){
-  const wrap=$("adminsList"); wrap.innerHTML="";
-  const list=admins.filter(a=>a.role!=="owner").sort((a,b)=>String(a.name||"").localeCompare(String(b.name||"")));
-  if(!list.length){ wrap.innerHTML='<div class="empty">No admins yet. Add one above.</div>'; return; }
-  list.forEach(a=>{
-    const active=a.active!==false;
-    const row=document.createElement("div"); row.className="admin-row";
-    row.innerHTML='<div class="ai"><div class="nm">'+(a.name||"—")+'</div><div class="em">Signs in with name + PIN</div></div><span class="badge '+(active?"active":"inactive")+'">'+(active?"Active":"Removed")+'</span>';
-    const btn=document.createElement("button"); btn.className="btn-ghost"; btn.style.marginLeft="6px"; btn.textContent=active?"Remove":"Restore";
-    btn.onclick=async ()=>{ try{ await db.collection("admins").doc(a.id).update({active:!active}); toast(active?"Admin removed.":"Admin restored."); }catch(e){ console.error(e); toast("Could not update admin."); } };
-    row.appendChild(btn); wrap.appendChild(row);
-  });
+async function toggleAdmin(uid,act){
+  const enable=act==="enable";
+  if(!enable && !confirm("Disable this admin? They won't be able to sign in or manage bookings.")) return;
+  try{ await db.collection("admins").doc(uid).update({active:enable}); toast(enable?"Admin enabled.":"Admin disabled."); loadAdmins(); }
+  catch(e){ console.error(e); toast("Could not update admin."); }
 }
 $("addAdminBtn").onclick=async ()=>{
-  const name=$("newAdminName").value.trim(), pin=$("newAdminPin").value.trim();
-  if(!name){ toast("Please enter the admin's name."); return; }
-  if(!/^\d{6}$/.test(pin)){ toast("PIN must be exactly 6 digits."); return; }
-  const email=adminEmail(name); if(!email){ toast("Please use a valid name."); return; }
+  const name=$("newAdminName").value.trim(), pin=$("newAdminPin").value.trim(); $("adminErr").textContent="";
+  if(!name){ $("adminErr").textContent="Please enter the admin's name."; return; }
+  if(!/^\d{6}$/.test(pin)){ $("adminErr").textContent="PIN must be exactly 6 digits."; return; }
   const btn=$("addAdminBtn"); btn.disabled=true; btn.textContent="Adding…";
   try{
+    const email=adminEmail(name);
     const sec=getSecondary();
     const cred=await sec.auth().createUserWithEmailAndPassword(email,pin);
     const uid=cred.user.uid;
-    await db.collection("admins").doc(uid).set({ name:name, email:email, role:"admin", active:true, createdAt:firebase.firestore.FieldValue.serverTimestamp() });
+    await db.collection("admins").doc(uid).set({ name:name, email:email, slug:adminSlug(name), active:true, createdAt:firebase.firestore.FieldValue.serverTimestamp() });
     await sec.auth().signOut();
     $("newAdminName").value=""; $("newAdminPin").value="";
-    toast("Admin added! Share the name + PIN with them.");
+    toast("Admin added.");
+    loadAdmins();
   }catch(e){
     console.error(e);
-    if(e.code==="auth/email-already-in-use") toast("That name is already used. Pick a different name.");
-    else if(e.code==="auth/weak-password") toast("PIN must be at least 6 digits.");
-    else toast("Could not add admin: "+(e.message||e.code||"error"));
+    const map={"auth/email-already-in-use":"An admin with that name already exists. Use a different name.","auth/weak-password":"PIN must be at least 6 digits.","auth/invalid-email":"That name can't be used. Try a simpler name."};
+    $("adminErr").textContent=map[e.code]||"Could not add admin. Please try again.";
   }finally{ btn.disabled=false; btn.textContent="Add admin"; }
 };
 
