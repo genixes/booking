@@ -75,6 +75,8 @@
   .det-row .left { display:flex; align-items:center; gap:8px; color:var(--navy); font-weight:600; }
   .det-row .time { color:var(--text); font-weight:600; }
   .det-divider { border:none; border-top:1px solid var(--line); margin:12px 0; }
+  .det-day { padding:2px 0; }
+  .det-day + .det-day { margin-top:8px; padding-top:8px; border-top:1px dashed var(--line); }
   .det-amt { display:flex; justify-content:space-between; font-size:15px; margin-top:8px; }
   .det-amt .lab { color:var(--navy); font-weight:600; }
   .det-amt .val { font-weight:800; color:var(--navy); }
@@ -131,8 +133,7 @@
 
     <div class="card">
       <div class="det-title">Booking details</div>
-      <div class="det-row"><span class="left">📅 <span id="dDate"></span></span><span class="time" id="dTime"></span></div>
-      <div class="det-row"><span class="left">🏟️ <span id="dCourts"></span></span></div>
+      <div id="detList"></div>
       <hr class="det-divider" />
       <div class="det-amt"><span class="lab">Total hours</span><span class="val" id="dHours"></span></div>
       <div class="det-amt"><span class="lab">Total amount</span><span class="val big" id="dAmount"></span></div>
@@ -207,21 +208,24 @@ function render(){
   $("bid").textContent=BID;
   combined=combinedStatus();
 
-  // Details
+  // Details — grouped by date (supports multi-day)
   const step=Number(SETTINGS.slotMinutes??60);
-  let allSlots=[], courts=new Set(), totalAmt=0, minStart=Infinity, maxEnd=-Infinity, date=ORDER[0].date;
-  ORDER.forEach(b=>{
-    if(b.status==="cancelled") return;
-    courts.add(b.court);
-    (b.slots||[]).forEach(s=>{ allSlots.push(s); const m=hm2min(s); if(m<minStart)minStart=m; if(m+step>maxEnd)maxEnd=m+step; });
-    totalAmt+=Number(b.amount||0);
+  const useDocs=ORDER.filter(b=>b.status!=="cancelled");
+  const docs=useDocs.length?useDocs:ORDER;
+  const byDate={};
+  docs.forEach(b=>{ (byDate[b.date]=byDate[b.date]||[]).push(b); });
+  const dates=Object.keys(byDate).sort();
+  let dhtml="", totalSlots=0, totalAmt=0;
+  dates.forEach(date=>{
+    const ds=byDate[date];
+    const courts=[...new Set(ds.map(d=>d.court))].sort().join(", ");
+    let mn=Infinity,mx=-Infinity;
+    ds.forEach(d=>(d.slots||[]).forEach(s=>{ const m=hm2min(s); if(m<mn)mn=m; if(m+step>mx)mx=m+step; totalSlots++; }));
+    ds.forEach(d=>totalAmt+=Number(d.amount||0));
+    dhtml+='<div class="det-day"><div class="det-row"><span class="left">📅 <span>'+niceDate(date)+'</span></span><span class="time">'+(mn<Infinity?(hourLabel12(mn)+" – "+hourLabel12(mx)):"—")+'</span></div><div class="det-row"><span class="left">🏟️ <span>'+courts+'</span></span></div></div>';
   });
-  if(!allSlots.length){ ORDER.forEach(b=>{ courts.add(b.court); (b.slots||[]).forEach(s=>{ const m=hm2min(s); if(m<minStart)minStart=m; if(m+step>maxEnd)maxEnd=m+step; }); }); }
-  const totalHours=(allSlots.length*step)/60;
-
-  $("dDate").textContent=niceDate(date);
-  $("dTime").textContent=(minStart<Infinity)?(hourLabel12(minStart)+" – "+hourLabel12(maxEnd)):"—";
-  $("dCourts").textContent=[...courts].sort().join(", ");
+  $("detList").innerHTML=dhtml;
+  const totalHours=(totalSlots*step)/60;
   $("dHours").textContent=totalHours+(totalHours===1?" hour":" hours");
   $("dAmount").textContent=peso(totalAmt);
 
