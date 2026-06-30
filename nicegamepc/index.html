@@ -575,9 +575,11 @@ $("submitBtn").onclick=async ()=>{
         const slots=byDateCourt[date][court].sort();
         const amount=slots.reduce((sum,s)=>sum+slotCost(hm2min(s)),0);
         const ref=db.collection("bookings").doc();
-        batch.set(ref,{ bookingId:bookingId, bookerName:name, contact:contact, email:email, date:date, court:court, slots:slots, startTime:slots[0], endTime:slots[slots.length-1], amount:amount, paymentMethod:chosenPayment||"", status:"pending", createdAt:firebase.firestore.FieldValue.serverTimestamp() });
+        batch.set(ref,{ bookingId:bookingId, date:date, court:court, slots:slots, startTime:slots[0], endTime:slots[slots.length-1], amount:amount, paymentMethod:chosenPayment||"", status:"pending", createdAt:firebase.firestore.FieldValue.serverTimestamp() });
       });
     });
+    // Booker PII is kept private (managers only)
+    batch.set(db.collection("bookingContacts").doc(bookingId),{ bookingId:bookingId, bookerName:name, contact:contact, email:email, createdAt:firebase.firestore.FieldValue.serverTimestamp() });
     await batch.commit();
     if(receiptData){ try{ await db.collection("receipts").doc(bookingId).set({ bookingId:bookingId, image:receiptData, createdAt:firebase.firestore.FieldValue.serverTimestamp() }); }catch(e){ console.warn("receipt save failed",e); } }
 
