@@ -273,7 +273,7 @@ let dayUnsub=null, pendingUnsub=null;
 let viewYear, viewMonth, selectedDate=null, currentView="list";
 let DAY=[], PENDING=[], CONTACTS={};
 
-try { firebase.initializeApp(firebaseConfig); db=firebase.firestore(); auth=firebase.auth(); }
+try { firebase.initializeApp(firebaseConfig); db=firebase.firestore(); auth=firebase.auth(); auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(()=>{}); }
 catch(e){ document.getElementById("boot").textContent="Config error. Check the Firebase config at the top of this file."; }
 
 const $=(id)=>document.getElementById(id);
@@ -302,8 +302,8 @@ function nameOf(b){ return cinfo(b).bookerName || b.bookerName || "—"; }
 function contactOf(b){ return cinfo(b).contact || b.contact || "—"; }
 function emailOf(b){ return cinfo(b).email || b.email || ""; }
 
-function adminSlug(name){ return String(name).toLowerCase().trim().replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"") || "admin"; }
-function adminEmail(name){ return "admin-"+adminSlug(name)+"@"+firebaseConfig.authDomain; }
+function adminSlug(name){ return String(name||"").trim().toLowerCase().replace(/[^a-z0-9]+/g,""); }
+function adminEmail(name){ const s=adminSlug(name); return s?(s+"@courtadmin.app"):""; }
 
 async function loadBase(){
   try{
