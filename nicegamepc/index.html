@@ -67,10 +67,12 @@
   .cal-month { text-align:center; font-weight:700; color:var(--navy); margin-bottom:8px; }
   .cal-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:2px; }
   .cal-grid .dow { text-align:center; font-size:11px; font-weight:700; color:var(--muted); padding:6px 0; }
-  .cal-day { aspect-ratio:1; display:grid; place-items:center; border-radius:9px; font-size:13px; font-weight:600; cursor:pointer; border:1px solid transparent; color:var(--text); }
+  .cal-day { position:relative; aspect-ratio:1; display:grid; place-items:center; border-radius:9px; font-size:13px; font-weight:600; cursor:pointer; border:1px solid transparent; color:var(--text); }
   .cal-day:hover:not(.disabled):not(.active) { background:var(--open-bg); }
   .cal-day.disabled { color:#C2CDD1; cursor:not-allowed; }
   .cal-day.active { background:var(--navy); color:#fff; }
+  .cal-day.has-cart::after { content:""; position:absolute; bottom:5px; left:50%; transform:translateX(-50%); width:5px; height:5px; border-radius:50%; background:var(--green); }
+  .cal-day.active.has-cart::after { background:#fff; }
   .cal-note { font-size:12px; color:var(--muted); margin-top:12px; line-height:1.5; }
   .cal-note strong { color:var(--navy); }
 
@@ -97,8 +99,10 @@
 
   .summary { position:sticky; top:18px; }
   .sum-empty { color:var(--muted); font-size:14px; }
-  .sum-list { display:flex; flex-direction:column; gap:8px; margin-bottom:14px; }
-  .sum-item { display:flex; justify-content:space-between; gap:8px; font-size:13px; padding-bottom:8px; border-bottom:1px dashed var(--line); }
+  .sum-list { display:flex; flex-direction:column; gap:6px; margin-bottom:14px; max-height:340px; overflow-y:auto; }
+  .sum-date { font-size:12px; font-weight:800; color:var(--navy); margin:10px 0 2px; }
+  .sum-date:first-child { margin-top:0; }
+  .sum-item { display:flex; justify-content:space-between; gap:8px; font-size:13px; padding-bottom:6px; border-bottom:1px dashed var(--line); }
   .sum-item .meta { display:flex; flex-direction:column; }
   .sum-item .price { font-weight:700; color:var(--navy); white-space:nowrap; }
   .sum-item .x { color:var(--muted); cursor:pointer; font-weight:700; }
@@ -111,12 +115,10 @@
   .btn-navy { background:var(--navy); } .btn-navy:hover { background:var(--navy-d); }
   .sum-note { font-size:12px; color:var(--muted); margin-top:10px; }
 
-  /* Footer links */
   .footer-links { margin-top:18px; display:flex; flex-direction:column; gap:8px; }
   .footer-links a, .footer-links span.fl-item { display:inline-flex; align-items:center; gap:8px; color:var(--navy); font-size:14px; font-weight:600; text-decoration:none; }
   .footer-links a:hover { text-decoration:underline; }
 
-  /* Mobile sticky bar */
   .mobile-bar { display:none; }
   @media (max-width:1000px) {
     .grid-layout { grid-template-columns:1fr; }
@@ -133,7 +135,6 @@
     .table-scroll { max-height:calc(100vh - 240px); overflow-y:auto; }
   }
 
-  /* Checkout view */
   .checkout { max-width:620px; margin:0 auto; }
   .checkout .card { margin-bottom:16px; }
   label.fl { display:block; font-weight:600; font-size:14px; margin-bottom:6px; color:var(--text); }
@@ -161,7 +162,6 @@
   .hold-note { background:#EAF1F7; border:1px solid #D5E3EE; color:#2E5C7E; border-radius:10px; padding:12px 14px; font-size:13px; margin-top:16px; }
   .hold-note strong { color:var(--pend-tx); }
 
-  /* Success */
   .success { max-width:520px; margin:40px auto; text-align:center; }
   .success .check { width:84px; height:84px; border-radius:50%; background:var(--open-bg); color:var(--green-d); display:grid; place-items:center; font-size:42px; margin:0 auto 18px; }
   .success h2 { color:var(--navy); font-size:26px; margin-bottom:14px; }
@@ -175,6 +175,7 @@
   .toast { position:fixed; left:50%; bottom:80px; transform:translateX(-50%); background:var(--navy-d); color:#fff; padding:14px 20px; border-radius:12px; font-weight:600; box-shadow:var(--shadow); opacity:0; pointer-events:none; transition:opacity .2s; max-width:90%; text-align:center; z-index:60; }
   .toast.show { opacity:1; }
   @media (prefers-reduced-motion: reduce){ *{ transition:none !important; } }
+
 
 html, body { max-width: 100%; overflow-x: hidden; }
 .grid-layout > * { min-width: 0; }
@@ -196,6 +197,8 @@ table.slots .time-cell { position: sticky; left: 0; background: var(--card); z-i
   .table-scroll { max-height: calc(100vh - 240px); overflow-y: auto; }
 }
 
+
+
 </style>
 </head>
 <body>
@@ -210,7 +213,6 @@ table.slots .time-cell { position: sticky; left: 0; background: var(--card); z-i
   <div id="loading" class="loading">Connecting to the booking system…</div>
   <div id="errorBox" class="error-box" style="display:none;"></div>
 
-  <!-- STEP 1: slot selection -->
   <div id="app" style="display:none;">
     <div class="grid-layout">
       <div>
@@ -238,7 +240,7 @@ table.slots .time-cell { position: sticky; left: 0; background: var(--card); z-i
 
       <div class="card">
         <h3>Select your slots</h3>
-        <div class="info-bar">Tap a cell to select. Tap multiple courts and hours to select more.</div>
+        <div class="info-bar">Tap a cell to select. You can pick slots across <strong>multiple dates</strong> — switch dates and your selections are kept.</div>
         <div class="table-scroll"><table class="slots"><thead><tr id="gridHead"></tr></thead><tbody id="gridBody"></tbody></table></div>
       </div>
 
@@ -252,11 +254,9 @@ table.slots .time-cell { position: sticky; left: 0; background: var(--card); z-i
       </div>
     </div>
 
-    <!-- Footer links -->
     <div class="footer-links" id="footerLinks"></div>
   </div>
 
-  <!-- STEP 2: checkout -->
   <div id="checkoutView" class="checkout" style="display:none;">
     <button class="btn-ghost" id="backToSlots" style="margin-bottom:16px;">‹ Back to slots</button>
 
@@ -290,7 +290,6 @@ table.slots .time-cell { position: sticky; left: 0; background: var(--card); z-i
     <div class="footer-links" id="footerLinks2" style="margin-top:18px;"></div>
   </div>
 
-  <!-- STEP 3: success -->
   <div id="successView" class="success" style="display:none;">
     <div class="check">✓</div>
     <h2>Booking received!</h2>
@@ -312,7 +311,7 @@ table.slots .time-cell { position: sticky; left: 0; background: var(--card); z-i
 
 <script>
 /* ============================================================
-   Layaw System — Firebase Booking Page (with payment flow)
+   Layaw System — Firebase Booking Page (multi-day + payment)
    ============================================================ */
 let db;
 try { firebase.initializeApp(firebaseConfig); db=firebase.firestore(); }
@@ -320,7 +319,7 @@ catch(e){ showError("Could not connect. Check the Firebase config at the top of 
 
 let SETTINGS=null, COURTS=[], RATES=[];
 let viewYear, viewMonth, selectedDate=null;
-let selected=new Set();
+let cart=new Set();                 /* keys: "YYYY-MM-DD|Court|HH:MM" */
 let bookedSet=new Set(), pendingSet=new Set();
 let availUnsub=null;
 let chosenPayment=null, receiptData=null;
@@ -332,11 +331,13 @@ function pad2(n){ return String(n).padStart(2,"0"); }
 function dstr(d){ return d.getFullYear()+"-"+pad2(d.getMonth()+1)+"-"+pad2(d.getDate()); }
 function today(){ const d=new Date(); d.setHours(0,0,0,0); return d; }
 function parseDstr(s){ const [y,m,d]=s.split("-").map(Number); return new Date(y,m-1,d); }
+function niceDateShort(s){ return parseDstr(s).toLocaleDateString("en-US",{weekday:"short",month:"short",day:"numeric"}); }
 function hm2min(s){ if(!s)return 0; const [h,m]=String(s).split(":").map(Number); return (h||0)*60+(m||0); }
 function hourLabel(mins){ let h=Math.floor(mins/60),m=mins%60; const ap=h>=12&&h<24?"PM":"AM"; let h12=h%12; if(h12===0)h12=12; return m===0?(h12+ap):(h12+":"+pad2(m)+ap); }
 function slotRangeLabel(s,step){ return hourLabel(s)+"-"+hourLabel(s+step); }
 function peso(n){ return "₱"+Number(n).toLocaleString("en-PH"); }
 function darken(hex,f){ hex=String(hex).replace("#",""); if(hex.length===3)hex=hex.split("").map(c=>c+c).join(""); const n=parseInt(hex,16); let r=Math.round(((n>>16)&255)*f),g=Math.round(((n>>8)&255)*f),b=Math.round((n&255)*f); return "#"+[r,g,b].map(x=>("0"+x.toString(16)).slice(-2)).join(""); }
+function ck(date,court,slot){ return date+"|"+court+"|"+slot; }
 
 async function loadData(){
   if(!db) return;
@@ -383,7 +384,6 @@ function startHero(){
   }
 }
 
-/* Footer links: address (maps), facebook, instagram, contact */
 function renderFooterLinks(){
   const html=[];
   if(SETTINGS.address || SETTINGS.addressName){
@@ -396,9 +396,9 @@ function renderFooterLinks(){
   const h=html.join(""); $("footerLinks").innerHTML=h; $("footerLinks2").innerHTML=h;
 }
 
-/* Calendar */
 function advanceDays(){ return Number(SETTINGS.advanceDays ?? 30); }
 function maxDate(){ const d=today(); d.setDate(d.getDate()+advanceDays()); return d; }
+function dateHasCart(ds){ for(const k of cart){ if(k.slice(0,10)===ds) return true; } return false; }
 function renderCalendar(){
   const mn=["January","February","March","April","May","June","July","August","September","October","November","December"];
   $("calMonth").textContent=mn[viewMonth]+" "+viewYear;
@@ -411,7 +411,7 @@ function renderCalendar(){
     const thisDate=new Date(viewYear,viewMonth,day), ds=dstr(thisDate);
     const cell=document.createElement("div"); cell.className="cal-day"; cell.textContent=day;
     if(thisDate<tmin||thisDate>tmax){ cell.classList.add("disabled"); }
-    else { if(ds===selectedDate) cell.classList.add("active"); cell.onclick=()=>{ selectedDate=ds; selected.clear(); renderCalendar(); watchAvailability(); renderGrid(); updateSummary(); }; }
+    else { if(ds===selectedDate) cell.classList.add("active"); if(dateHasCart(ds)) cell.classList.add("has-cart"); cell.onclick=()=>{ selectedDate=ds; renderCalendar(); watchAvailability(); renderGrid(); }; }
     grid.appendChild(cell);
   }
   $("prevMonth").disabled=new Date(viewYear,viewMonth,1)<=new Date(tmin.getFullYear(),tmin.getMonth(),1);
@@ -420,9 +420,8 @@ function renderCalendar(){
 }
 $("prevMonth").onclick=()=>{ viewMonth--; if(viewMonth<0){viewMonth=11;viewYear--;} renderCalendar(); };
 $("nextMonth").onclick=()=>{ viewMonth++; if(viewMonth>11){viewMonth=0;viewYear++;} renderCalendar(); };
-$("todayBtn").onclick=()=>{ const t=today(); viewYear=t.getFullYear(); viewMonth=t.getMonth(); selectedDate=dstr(t); selected.clear(); renderCalendar(); watchAvailability(); renderGrid(); updateSummary(); };
+$("todayBtn").onclick=()=>{ const t=today(); viewYear=t.getFullYear(); viewMonth=t.getMonth(); selectedDate=dstr(t); renderCalendar(); watchAvailability(); renderGrid(); };
 
-/* Slots + rates */
 function buildSlots(){ const open=Number(SETTINGS.openHour??8),close=Number(SETTINGS.closeHour??22),step=Number(SETTINGS.slotMinutes??60); const a=[]; for(let m=open*60;m+step<=close*60;m+=step) a.push({mins:m,key:pad2(Math.floor(m/60))+":"+pad2(m%60),label:slotRangeLabel(m,step)}); return a; }
 function rateForSlot(s){ if(RATES.length){ const r=RATES.find(r=>s>=r.start&&s<r.end); if(r) return r.rate; } return Number(SETTINGS.ratePerHour??0); }
 function slotCost(s){ return (Number(SETTINGS.slotMinutes??60)/60)*rateForSlot(s); }
@@ -442,40 +441,48 @@ function renderGrid(){
     const tc=document.createElement("td"); tc.className="time-cell"; tc.textContent=slot.label; tr.appendChild(tc);
     COURTS.forEach(c=>{
       const td=document.createElement("td"); td.className="cell";
-      const key=c.name+"|"+slot.key; const inner=document.createElement("div"); inner.className="cell-inner";
-      if(bookedSet.has(key)){ inner.className+=" cell-booked"; inner.textContent="Booked"; }
-      else if(pendingSet.has(key)){ inner.className+=" cell-pending"; inner.textContent="Pending"; }
-      else if(selected.has(key)){ inner.className+=" cell-selected"; inner.textContent="Selected"; inner.onclick=()=>{ selected.delete(key); renderGrid(); updateSummary(); }; }
-      else { inner.className+=" cell-open"; inner.textContent="Open"; inner.onclick=()=>{ selected.add(key); renderGrid(); updateSummary(); }; }
+      const availKey=c.name+"|"+slot.key, cartKey=ck(selectedDate,c.name,slot.key);
+      const inner=document.createElement("div"); inner.className="cell-inner";
+      if(bookedSet.has(availKey)){ inner.className+=" cell-booked"; inner.textContent="Booked"; }
+      else if(pendingSet.has(availKey)){ inner.className+=" cell-pending"; inner.textContent="Pending"; }
+      else if(cart.has(cartKey)){ inner.className+=" cell-selected"; inner.textContent="Selected"; inner.onclick=()=>{ cart.delete(cartKey); afterCartChange(); }; }
+      else { inner.className+=" cell-open"; inner.textContent="Open"; inner.onclick=()=>{ cart.add(cartKey); afterCartChange(); }; }
       td.appendChild(inner); tr.appendChild(td);
     });
     body.appendChild(tr);
   });
 }
+function afterCartChange(){ renderGrid(); updateSummary(); renderCalendar(); }
+
+function cartTotal(){ let t=0; cart.forEach(k=>{ t+=slotCost(hm2min(k.split("|")[2])); }); return t; }
 function updateSummary(){
   const list=$("sumList"), empty=$("sumEmpty"); list.innerHTML=""; let total=0;
-  if(selected.size===0){ empty.style.display="block"; }
+  if(cart.size===0){ empty.style.display="block"; }
   else {
     empty.style.display="none"; const step=Number(SETTINGS.slotMinutes??60);
-    [...selected].sort().forEach(key=>{
-      const [court,hhmm]=key.split("|"); const mins=hm2min(hhmm); const cost=slotCost(mins); total+=cost;
-      const row=document.createElement("div"); row.className="sum-item";
-      const meta=document.createElement("div"); meta.className="meta";
-      meta.innerHTML="<span>"+court+"</span><span style='color:var(--muted);font-size:12px'>"+slotRangeLabel(mins,step)+"</span>";
-      const right=document.createElement("div"); right.style.cssText="display:flex;gap:10px;align-items:center";
-      const price=document.createElement("span"); price.className="price"; price.textContent=peso(cost);
-      const x=document.createElement("span"); x.className="x"; x.textContent="✕"; x.onclick=()=>{ selected.delete(key); renderGrid(); updateSummary(); };
-      right.appendChild(price); right.appendChild(x); row.appendChild(meta); row.appendChild(right); list.appendChild(row);
+    const byDate={};
+    [...cart].forEach(k=>{ const [date,court,hhmm]=k.split("|"); (byDate[date]=byDate[date]||[]).push({date,court,hhmm,key:k}); });
+    Object.keys(byDate).sort().forEach(date=>{
+      const head=document.createElement("div"); head.className="sum-date"; head.textContent=niceDateShort(date); list.appendChild(head);
+      byDate[date].sort((a,b)=> a.court.localeCompare(b.court) || hm2min(a.hhmm)-hm2min(b.hhmm)).forEach(item=>{
+        const mins=hm2min(item.hhmm); const cost=slotCost(mins); total+=cost;
+        const row=document.createElement("div"); row.className="sum-item";
+        const meta=document.createElement("div"); meta.className="meta";
+        meta.innerHTML="<span>"+item.court+"</span><span style='color:var(--muted);font-size:12px'>"+slotRangeLabel(mins,step)+"</span>";
+        const right=document.createElement("div"); right.style.cssText="display:flex;gap:10px;align-items:center";
+        const price=document.createElement("span"); price.className="price"; price.textContent=peso(cost);
+        const x=document.createElement("span"); x.className="x"; x.textContent="✕"; x.onclick=()=>{ cart.delete(item.key); afterCartChange(); };
+        right.appendChild(price); right.appendChild(x); row.appendChild(meta); row.appendChild(right); list.appendChild(row);
+      });
     });
   }
   $("sumTotal").textContent=peso(total);
-  $("continueBtn").disabled=selected.size===0;
-  $("mbSlots").textContent=selected.size; $("mbTotal").textContent=peso(total); $("mbContinue").disabled=selected.size===0;
+  $("continueBtn").disabled=cart.size===0;
+  $("mbSlots").textContent=cart.size; $("mbTotal").textContent=peso(total); $("mbContinue").disabled=cart.size===0;
 }
 
-/* ---------- Checkout ---------- */
 function goCheckout(){
-  if(selected.size===0) return;
+  if(cart.size===0) return;
   $("app").style.display="none"; $("checkoutView").style.display="block"; $("mobileBar").style.display="none";
   renderPayMethods(); window.scrollTo({top:0,behavior:"smooth"});
 }
@@ -510,13 +517,11 @@ function showPayDetail(m){
     if(m.number) html+='<button class="copy-btn" id="copyNo">Copy</button>';
     html+='</div>';
   }
-  let payTotal=0; selected.forEach(k=>{ payTotal+=slotCost(hm2min(k.split("|")[1])); });
-  html+='<div class="exact">Please send the exact amount: <strong style="color:var(--navy);font-size:17px;">'+peso(payTotal)+'</strong></div>';
+  html+='<div class="exact">Please send the exact amount: <strong style="color:var(--navy);font-size:17px;">'+peso(cartTotal())+'</strong></div>';
   d.innerHTML=html;
   if(m.number){ const c=$("copyNo"); if(c) c.onclick=()=>{ navigator.clipboard.writeText(m.number).then(()=>toast("Number copied!")).catch(()=>toast("Copy failed")); }; }
 }
 
-/* Receipt upload (compress to small JPEG -> base64) */
 $("uploadBox").onclick=()=>$("receiptInput").click();
 $("receiptInput").onchange=(e)=>{
   const file=e.target.files[0]; if(!file) return;
@@ -532,7 +537,6 @@ $("receiptInput").onchange=(e)=>{
   reader.readAsDataURL(file);
 };
 
-/* Booking ID via counter */
 async function nextBookingId(){
   let prefix=SETTINGS.idPrefix;
   if(!prefix){ prefix=(SETTINGS.businessName||"BK").split(/\s+/).map(w=>w[0]).join("").replace(/[^A-Za-z]/g,"").toUpperCase().slice(0,4)||"BK"; }
@@ -542,7 +546,6 @@ async function nextBookingId(){
   return prefix+"-"+mmddyy+"-"+String(seq).padStart(4,"0");
 }
 
-/* Submit */
 $("submitBtn").onclick=async ()=>{
   const name=$("nameInput").value.trim(), contact=$("contactInput").value.trim(), email=$("emailInput").value.trim();
   if(!name){ toast("Please enter your name."); return; }
@@ -550,19 +553,30 @@ $("submitBtn").onclick=async ()=>{
   if(paymentOptions().length && !chosenPayment){ toast("Please select a payment method."); return; }
   const btn=$("submitBtn"); btn.disabled=true; btn.textContent="Submitting…";
   try{
-    const snap=await db.collection("bookings").where("date","==",selectedDate).get();
-    const taken=new Set(); snap.forEach(doc=>{ const b=doc.data(); if(b.status==="cancelled")return; (b.slots||[]).forEach(s=>taken.add(b.court+"|"+s)); });
-    const clash=[...selected].find(k=>taken.has(k));
-    if(clash){ const [c,h]=clash.split("|"); toast("Sorry, "+c+" "+hourLabel(hm2min(h))+" was just taken."); btn.disabled=false; btn.textContent="Submit Booking"; return; }
+    // group cart by date -> court -> slots
+    const byDateCourt={};
+    [...cart].forEach(k=>{ const [date,court,hhmm]=k.split("|"); ((byDateCourt[date]=byDateCourt[date]||{})[court]=byDateCourt[date][court]||[]).push(hhmm); });
+
+    // re-check conflicts per date
+    for(const date of Object.keys(byDateCourt)){
+      const snap=await db.collection("bookings").where("date","==",date).get();
+      const taken=new Set(); snap.forEach(doc=>{ const b=doc.data(); if(b.status==="cancelled")return; (b.slots||[]).forEach(s=>taken.add(b.court+"|"+s)); });
+      for(const court of Object.keys(byDateCourt[date])){
+        for(const s of byDateCourt[date][court]){
+          if(taken.has(court+"|"+s)){ toast("Sorry, "+court+" "+hourLabel(hm2min(s))+" on "+niceDateShort(date)+" was just taken."); btn.disabled=false; btn.textContent="Submit Booking"; return; }
+        }
+      }
+    }
 
     const bookingId=await nextBookingId();
-    const byCourt={}; [...selected].forEach(k=>{ const [court,hhmm]=k.split("|"); (byCourt[court]=byCourt[court]||[]).push(hhmm); });
     const batch=db.batch();
-    Object.keys(byCourt).forEach(court=>{
-      const slots=byCourt[court].sort();
-      const amount=slots.reduce((sum,s)=>sum+slotCost(hm2min(s)),0);
-      const ref=db.collection("bookings").doc();
-      batch.set(ref,{ bookingId:bookingId, bookerName:name, contact:contact, email:email, date:selectedDate, court:court, slots:slots, startTime:slots[0], endTime:slots[slots.length-1], amount:amount, paymentMethod:chosenPayment||"", status:"pending", createdAt:firebase.firestore.FieldValue.serverTimestamp() });
+    Object.keys(byDateCourt).forEach(date=>{
+      Object.keys(byDateCourt[date]).forEach(court=>{
+        const slots=byDateCourt[date][court].sort();
+        const amount=slots.reduce((sum,s)=>sum+slotCost(hm2min(s)),0);
+        const ref=db.collection("bookings").doc();
+        batch.set(ref,{ bookingId:bookingId, bookerName:name, contact:contact, email:email, date:date, court:court, slots:slots, startTime:slots[0], endTime:slots[slots.length-1], amount:amount, paymentMethod:chosenPayment||"", status:"pending", createdAt:firebase.firestore.FieldValue.serverTimestamp() });
+      });
     });
     await batch.commit();
     if(receiptData){ try{ await db.collection("receipts").doc(bookingId).set({ bookingId:bookingId, image:receiptData, createdAt:firebase.firestore.FieldValue.serverTimestamp() }); }catch(e){ console.warn("receipt save failed",e); } }
@@ -575,12 +589,12 @@ $("submitBtn").onclick=async ()=>{
 };
 
 $("anotherBtn").onclick=()=>{
-  selected.clear(); chosenPayment=null; receiptData=null;
+  cart.clear(); chosenPayment=null; receiptData=null;
   $("nameInput").value=""; $("contactInput").value=""; $("emailInput").value="";
   $("receiptPreview").style.display="none"; $("uploadBox").querySelector(".big").textContent="☁️ Tap to upload image";
   $("successView").style.display="none"; $("app").style.display="block";
   if(window.innerWidth<=1000) $("mobileBar").style.display="flex";
-  renderGrid(); updateSummary(); window.scrollTo({top:0,behavior:"smooth"});
+  renderGrid(); updateSummary(); renderCalendar(); window.scrollTo({top:0,behavior:"smooth"});
 };
 
 loadData();
