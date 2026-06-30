@@ -16,6 +16,7 @@
     storageBucket: "layaw-pickleball.firebasestorage.app",
     messagingSenderId: "940525720373",
     appId: "1:940525720373:web:dfbe3e353e1402bf27727c"
+
   };
 </script>
 
@@ -273,6 +274,18 @@ function orderGroups(list){
 function groupStatus(grp){ if(grp.some(b=>b.status==="pending"))return "pending"; if(grp.some(b=>b.status==="confirmed"))return "confirmed"; return "cancelled"; }
 function groupKey(grp){ return grp[0].bookingId||grp[0].id; }
 
+/* Booker PII lives in a manager-only collection; cache it here */
+let CONTACTS={};
+async function ensureContacts(list){
+  const ids=[...new Set(list.map(b=>b.bookingId).filter(id=>id && !(id in CONTACTS)))];
+  if(!ids.length) return;
+  await Promise.all(ids.map(async id=>{ try{ const doc=await db.collection("bookingContacts").doc(id).get(); CONTACTS[id]=doc.exists?doc.data():{}; }catch(e){ CONTACTS[id]={}; } }));
+}
+function cinfo(b){ return (b.bookingId && CONTACTS[b.bookingId]) ? CONTACTS[b.bookingId] : {}; }
+function nameOf(b){ return cinfo(b).bookerName || b.bookerName || "—"; }
+function contactOf(b){ return cinfo(b).contact || b.contact || "—"; }
+function emailOf(b){ return cinfo(b).email || b.email || ""; }
+
 async function loadBase(){
   try{
     const cfg=await db.collection("settings").doc("config").get();
@@ -336,24 +349,26 @@ $("todayBtn").onclick=()=>{ const t=today(); viewYear=t.getFullYear(); viewMonth
 function watchDay(){
   if(dayUnsub){ dayUnsub(); }
   $("dayTitle").textContent=niceDate(selectedDate);
-  dayUnsub=db.collection("bookings").where("date","==",selectedDate).onSnapshot(snap=>{
+  dayUnsub=db.collection("bookings").where("date","==",selectedDate).onSnapshot(async snap=>{
     DAY=[]; snap.forEach(d=>DAY.push({id:d.id, ...d.data()}));
     DAY.sort((a,b)=>{ const ta=a.createdAt&&a.createdAt.seconds||0, tb=b.createdAt&&b.createdAt.seconds||0; return tb-ta; });
     const groups=orderGroups(DAY.filter(b=>b.status!=="cancelled"));
     let p=0,c=0; groups.forEach(grp=>{ const s=groupStatus(grp); if(s==="pending")p++; else if(s==="confirmed")c++; });
     let rev=0; DAY.forEach(b=>{ if(b.status==="confirmed") rev+=Number(b.amount||0); });
     $("stPending").textContent=p; $("stConfirmed").textContent=c; $("stRevenue").textContent=peso(rev);
+    await ensureContacts(DAY);
     renderView();
   }, err=>{ console.error(err); $("listView").innerHTML='<div class="empty">Could not load bookings.</div>'; });
 }
 
 function watchPending(){
   if(pendingUnsub){ pendingUnsub(); }
-  pendingUnsub=db.collection("bookings").where("status","==","pending").onSnapshot(snap=>{
+  pendingUnsub=db.collection("bookings").where("status","==","pending").onSnapshot(async snap=>{
     PENDING=[]; snap.forEach(d=>PENDING.push({id:d.id, ...d.data()}));
     PENDING.sort((a,b)=>{ if(a.date!==b.date) return a.date<b.date?-1:1; return (a.startTime||"").localeCompare(b.startTime||""); });
     const n=orderGroups(PENDING).length;
     const dot=$("bellDot"); if(n>0){ dot.style.display="grid"; dot.textContent=n>99?"99+":n; } else dot.style.display="none";
+    await ensureContacts(PENDING);
     renderNotif();
   }, err=>console.error(err));
 }
@@ -379,8 +394,8 @@ function renderList(){
       ? '<div class="times">'+slotsLabel(first.slots)+'</div>'
       : grp.map(b=>'<div class="times"><strong>'+b.court+'</strong> · '+slotsLabel(b.slots)+'</div>').join("");
     let acts=""; if(st==="pending") acts='<button class="act act-confirm" data-key="'+key+'" data-act="confirm">Confirm</button><button class="act act-cancel" data-key="'+key+'" data-act="cancel">Cancel</button>'; else if(st==="confirmed") acts='<button class="act act-cancel" data-key="'+key+'" data-act="cancel">Cancel booking</button>';
-    const card=document.createElement("div"); card.className="booking";
-    card.innerHTML='<div class="row1"><span class="court">'+courts.join(", ")+'</span><span class="badge '+st+'">'+st+'</span><span class="amt">'+peso(total)+'</span></div>'+timesHtml+'<div class="who"><strong>'+(first.bookerName||"—")+'</strong> · '+(first.contact||"—")+(first.email?(' · '+first.email):'')+'</div>'+(acts?('<div class="actions">'+acts+'</div>'):'');
+    const card=document.createElement("div"); card.className="booking"; const em=emailOf(first);
+    card.innerHTML='<div class="row1"><span class="court">'+courts.join(", ")+'</span><span class="badge '+st+'">'+st+'</span><span class="amt">'+peso(total)+'</span></div>'+timesHtml+'<div class="who"><strong>'+nameOf(first)+'</strong> · '+contactOf(first)+(em?(' · '+em):'')+'</div>'+(acts?('<div class="actions">'+acts+'</div>'):'');
     wrap.appendChild(card);
   });
   wrap.querySelectorAll(".act").forEach(btn=>btn.onclick=()=>doAction(btn.getAttribute("data-key"),btn.getAttribute("data-act")));
@@ -413,7 +428,7 @@ function renderGrid(){
       if(seg){
         const b=seg.booking, st=b.status||"pending";
         const td=document.createElement("td"); td.className="cell book-cell "+st; td.rowSpan=seg.len;
-        td.innerHTML='<div class="nm">'+(b.bookerName||"Booking")+'</div><div class="stt">'+st.toUpperCase()+'</div>';
+        td.innerHTML='<div class="nm">'+nameOf(b)+'</div><div class="stt">'+st.toUpperCase()+'</div>';
         td.onclick=()=>openDetail(b); tr.appendChild(td);
       } else {
         const td=document.createElement("td"); td.className="cell";
@@ -439,9 +454,9 @@ function openDetail(b){
   let acts=""; if(st==="pending") acts='<button class="act act-confirm" data-key="'+key+'" data-act="confirm">Confirm</button><button class="act act-cancel" data-key="'+key+'" data-act="cancel">Cancel</button>'; else if(st==="confirmed") acts='<button class="act act-cancel" data-key="'+key+'" data-act="cancel">Cancel booking</button>';
   $("detailModal").innerHTML='<h3>'+courts+' · <span class="badge '+st+'">'+st+'</span></h3>'+
     '<div class="mrow"><span>Date:</span> '+niceDate(first.date)+'</div>'+ timesHtml +
-    '<div class="mrow"><span>Booker:</span> <strong>'+(first.bookerName||"—")+'</strong></div>'+
-    '<div class="mrow"><span>Contact:</span> '+(first.contact||"—")+'</div>'+
-    (first.email?'<div class="mrow"><span>Email:</span> '+first.email+'</div>':'')+
+    '<div class="mrow"><span>Booker:</span> <strong>'+nameOf(first)+'</strong></div>'+
+    '<div class="mrow"><span>Contact:</span> '+contactOf(first)+'</div>'+
+    (emailOf(first)?'<div class="mrow"><span>Email:</span> '+emailOf(first)+'</div>':'')+
     (first.paymentMethod?'<div class="mrow"><span>Payment:</span> '+first.paymentMethod+'</div>':'')+
     '<div class="mrow"><span>Total:</span> <strong>'+peso(total)+'</strong></div>'+
     '<div class="modal-actions"><button class="btn-ghost" id="detailClose">Close</button><button class="btn-ghost" id="viewReceiptBtn">View receipt</button></div>'+
@@ -473,7 +488,7 @@ function renderNotif(){
     const courts=[...new Set(grp.map(b=>b.court))].sort().join(", ");
     const total=grp.reduce((s,b)=>s+Number(b.amount||0),0);
     const it=document.createElement("div"); it.className="nitem";
-    it.innerHTML='<div class="nt">'+courts+' · '+niceDate(first.date)+'</div><div class="nd">'+slotsLabel(first.slots)+' · '+(first.bookerName||"—")+' · '+peso(total)+'</div><div class="nacts"><button class="act-confirm" data-key="'+key+'" data-act="confirm">Confirm</button><button class="act-cancel" data-key="'+key+'" data-act="cancel">Cancel</button></div>';
+    it.innerHTML='<div class="nt">'+courts+' · '+niceDate(first.date)+'</div><div class="nd">'+slotsLabel(first.slots)+' · '+nameOf(first)+' · '+peso(total)+'</div><div class="nacts"><button class="act-confirm" data-key="'+key+'" data-act="confirm">Confirm</button><button class="act-cancel" data-key="'+key+'" data-act="cancel">Cancel</button></div>';
     body.appendChild(it);
   });
   body.querySelectorAll("button").forEach(btn=>btn.onclick=()=>doAction(btn.getAttribute("data-key"),btn.getAttribute("data-act")));
