@@ -174,11 +174,11 @@
 <div id="loginView" class="login-wrap" style="display:none;">
   <div class="login-card">
     <div class="brand"><img id="loginLogo" alt="" style="display:none;" /><div><div class="eyebrow">Admin access</div><h1 id="loginBiz">Dashboard</h1></div></div>
-    <p class="sub">Sign in to manage your court bookings.</p>
-    <label class="fl" for="email">Email</label>
-    <input type="email" id="email" placeholder="manager@email.com" autocomplete="username" />
-    <label class="fl" for="password">Password</label>
-    <input type="password" id="password" placeholder="••••••••" autocomplete="current-password" />
+    <p class="sub">Sign in with your name and 6-digit PIN.</p>
+    <label class="fl" for="adminName">Admin name</label>
+    <input type="text" id="adminName" placeholder="Your name" autocomplete="username" />
+    <label class="fl" for="adminPin">6-digit PIN</label>
+    <input type="password" id="adminPin" inputmode="numeric" maxlength="6" placeholder="••••••" autocomplete="current-password" style="letter-spacing:.3em;" />
     <div class="login-err" id="loginErr"></div>
     <button class="btn" id="signinBtn" style="margin-top:6px;">Sign in</button>
   </div>
@@ -304,20 +304,26 @@ async function loadBase(){
   }catch(e){ console.warn(e); }
 }
 
-auth && auth.onAuthStateChanged(user=>{
+auth && auth.onAuthStateChanged(async user=>{
   $("boot").style.display="none";
-  if(user){ $("loginView").style.display="none"; $("dashView").style.display="block"; startDashboard(); }
+  if(user){
+    try{ const a=await db.collection("admins").doc(user.uid).get(); if(!a.exists || a.data().active===false){ $("loginErr").textContent="This account is no longer active. Contact the owner."; await auth.signOut(); return; } }
+    catch(e){ $("loginErr").textContent="This account is no longer active. Contact the owner."; await auth.signOut(); return; }
+    $("loginView").style.display="none"; $("dashView").style.display="block"; startDashboard();
+  }
   else { $("dashView").style.display="none"; $("loginView").style.display="grid"; if(dayUnsub){dayUnsub();} if(pendingUnsub){pendingUnsub();} }
 });
+function adminEmail(name){ const slug=String(name||"").trim().toLowerCase().replace(/[^a-z0-9]+/g,""); return slug?(slug+"@courtadmin.app"):""; }
 $("signinBtn").onclick=async ()=>{
-  const email=$("email").value.trim(), pw=$("password").value; $("loginErr").textContent="";
-  if(!email||!pw){ $("loginErr").textContent="Please enter your email and password."; return; }
+  const name=$("adminName").value.trim(), pin=$("adminPin").value.trim(); $("loginErr").textContent="";
+  if(!name||!pin){ $("loginErr").textContent="Please enter your name and PIN."; return; }
+  if(!/^\d{6}$/.test(pin)){ $("loginErr").textContent="PIN must be 6 digits."; return; }
   const btn=$("signinBtn"); btn.disabled=true; btn.textContent="Signing in…";
-  try{ await auth.signInWithEmailAndPassword(email,pw); }
-  catch(e){ const map={"auth/invalid-email":"That email looks invalid.","auth/user-not-found":"No account found.","auth/wrong-password":"Incorrect password.","auth/invalid-credential":"Email or password is incorrect.","auth/too-many-requests":"Too many attempts. Try again later."}; $("loginErr").textContent=map[e.code]||"Could not sign in."; }
+  try{ await auth.signInWithEmailAndPassword(adminEmail(name),pin); }
+  catch(e){ const map={"auth/invalid-credential":"Name or PIN is incorrect.","auth/user-not-found":"No admin found with that name.","auth/wrong-password":"Incorrect PIN.","auth/too-many-requests":"Too many attempts. Try again later."}; $("loginErr").textContent=map[e.code]||"Name or PIN is incorrect."; }
   finally { btn.disabled=false; btn.textContent="Sign in"; }
 };
-$("password").addEventListener("keydown",e=>{ if(e.key==="Enter") $("signinBtn").click(); });
+$("adminPin").addEventListener("keydown",e=>{ if(e.key==="Enter") $("signinBtn").click(); });
 $("signoutBtn").onclick=()=>auth.signOut();
 
 async function startDashboard(){
