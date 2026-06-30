@@ -321,6 +321,40 @@
     .dash-greet h2 { font-size:22px; }
   }
   @media (max-width:520px){ .kpi-grid { grid-template-columns:1fr; } .recent-row .rt{ min-width:0; } }
+  /* settings form */
+  .form-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px 16px; }
+  .fld.full { grid-column:1/-1; }
+  .fld label { display:block; font-size:13px; font-weight:600; margin-bottom:6px; color:var(--text); }
+  .fld input, .fld select { width:100%; padding:11px 12px; border:1px solid var(--line); border-radius:10px; font:inherit; background:#fff; }
+  .fld input[type=color] { padding:4px; height:44px; cursor:pointer; }
+  .color-row { display:flex; gap:10px; align-items:center; }
+  .color-row input[type=color] { width:54px; flex-shrink:0; }
+  .pay-method { border:1px solid var(--line); border-radius:13px; padding:14px; margin-bottom:12px; }
+  .pay-method .pm-head { display:flex; align-items:center; gap:10px; margin-bottom:12px; }
+  .pay-method .pm-head label { font-weight:800; color:var(--navy); }
+  .switch { position:relative; display:inline-block; width:42px; height:24px; }
+  .switch input { opacity:0; width:0; height:0; }
+  .switch .sl { position:absolute; inset:0; background:#CBD5D8; border-radius:999px; transition:.18s; cursor:pointer; }
+  .switch .sl:before { content:""; position:absolute; height:18px; width:18px; left:3px; top:3px; background:#fff; border-radius:50%; transition:.18s; }
+  .switch input:checked + .sl { background:var(--green); }
+  .switch input:checked + .sl:before { transform:translateX(18px); }
+  .save-bar { display:flex; align-items:center; gap:14px; margin-top:18px; }
+  .save-bar .msg { font-size:13px; font-weight:600; color:var(--green-d); }
+  .settings-stack { display:flex; flex-direction:column; gap:16px; }
+
+  /* courts editor */
+  .court-edit { display:grid; grid-template-columns:1.4fr 1fr 1fr auto auto; gap:10px; align-items:center; padding:12px 0; border-bottom:1px solid var(--line); }
+  .court-edit input, .court-edit select { padding:9px 10px; border:1px solid var(--line); border-radius:9px; font:inherit; background:#fff; width:100%; }
+  .court-edit .ce-act { display:flex; gap:8px; align-items:center; }
+  @media (max-width:720px){ .court-edit { grid-template-columns:1fr 1fr; } .form-grid{ grid-template-columns:1fr; } }
+
+  /* payments */
+  .txn-table { width:100%; border-collapse:collapse; font-size:13.5px; }
+  .txn-table th { text-align:left; font-weight:700; color:var(--muted); padding:9px 8px; border-bottom:1px solid var(--line); font-size:12px; text-transform:uppercase; letter-spacing:.04em; }
+  .txn-table td { padding:11px 8px; border-bottom:1px solid var(--line); }
+  .txn-table td.amt { font-weight:800; color:var(--navy); text-align:right; }
+  .txn-table .method { font-size:11px; font-weight:700; background:var(--bg); padding:3px 9px; border-radius:999px; }
+
   @media (prefers-reduced-motion: reduce){ *{ transition:none !important; animation:none !important; } }
 </style>
 </head>
@@ -351,9 +385,9 @@
     <nav class="nav" id="navMenu">
       <div class="nav-item active" data-sec="dashboard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg> Dashboard</div>
       <div class="nav-item" data-sec="bookings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg> Bookings</div>
-      <div class="nav-item" data-soon="Courts|Set each court&#39;s type (Covered or Outdoor) and mark courts as available or under maintenance. Court Status on your dashboard updates automatically.|courts"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 3v18"/></svg> Courts</div>
+      <div class="nav-item" data-sec="courts"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 3v18"/></svg> Courts</div>
       <div class="nav-item" data-soon="Pricing|Configure hourly rates, peak and off-peak pricing, and weekday vs weekend rates so your booking page always charges the right amount.|pricing"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12l-8.5 8.5a2 2 0 0 1-2.8 0L3 15V4h11z"/><circle cx="7.5" cy="7.5" r="1.5"/></svg> Pricing</div>
-      <div class="nav-item" data-soon="Payments|See a sales summary, track pending payments, and export your revenue records to CSV or Excel for accounting.|payments"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg> Payments</div>
+      <div class="nav-item" data-sec="payments"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg> Payments</div>
       <div class="nav-sep"></div>
       <div class="nav-item" data-sec="reports"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19V5M4 19h16"/><path d="M8 16l3-4 3 2 4-6"/></svg> Reports</div>
       <div class="nav-item" data-sec="customers"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><path d="M16 6.5a3.5 3.5 0 0 1 0 7M21 20c0-2.6-1.7-4.8-4-5.6"/></svg> Customers</div>
@@ -460,24 +494,125 @@
 
       <!-- ===== SETTINGS ===== -->
       <section id="sec-settings" class="sec">
-        <div class="sec-head"><h2>Settings</h2><p>Manage your team now. Branding, hours, and payment settings are coming in your next update.</p></div>
-        <div class="card" style="margin-bottom:16px;">
-          <div class="card-head"><h3>Staff Management</h3></div>
-          <p class="muted-sub" style="margin-bottom:14px;">Staff sign in with their <strong>name</strong> and a <strong>6-digit PIN</strong> on the admin page.</p>
-          <div id="adminsList"><div class="empty">Loading…</div></div>
-          <h4 style="font-size:14px;color:var(--navy);margin:18px 0 10px;">Add a staff member</h4>
-          <div class="add-row">
-            <input type="text" id="newAdminName" placeholder="Staff name" />
-            <input type="tel" id="newAdminPin" class="pin" placeholder="6-digit PIN" maxlength="6" inputmode="numeric" />
+        <div class="sec-head"><h2>Settings</h2><p>Manage your club's branding, hours, payments, booking rules, and team.</p></div>
+        <div class="settings-stack">
+          <div class="card">
+            <div class="card-head"><h3>Branding</h3></div>
+            <div class="form-grid">
+              <div class="fld"><label>Club name</label><input id="set_businessName" /></div>
+              <div class="fld"><label>Tagline</label><input id="set_tagline" /></div>
+              <div class="fld full"><label>Logo URL</label><input id="set_logoUrl" placeholder="https://i.imgur.com/..." /></div>
+              <div class="fld"><label>Primary color</label><div class="color-row"><input type="color" id="set_colorPrimary" /><input id="set_colorPrimaryHex" placeholder="#15455F" /></div></div>
+              <div class="fld"><label>Accent color</label><div class="color-row"><input type="color" id="set_colorAccent" /><input id="set_colorAccentHex" placeholder="#1FB373" /></div></div>
+            </div>
           </div>
-          <div class="form-err" id="adminErr"></div>
-          <div style="margin-top:12px;"><button class="act act-confirm" id="addAdminBtn" style="max-width:200px;">Add staff</button></div>
+
+          <div class="card">
+            <div class="card-head"><h3>Operating Hours &amp; Rate</h3></div>
+            <div class="form-grid">
+              <div class="fld"><label>Opening hour (0–23)</label><input type="number" id="set_openHour" min="0" max="23" /></div>
+              <div class="fld"><label>Closing hour (1–24)</label><input type="number" id="set_closeHour" min="1" max="24" /></div>
+              <div class="fld"><label>Slot length (minutes)</label><input type="number" id="set_slotMinutes" min="15" step="15" /></div>
+              <div class="fld"><label>Rate per hour (₱)</label><input type="number" id="set_ratePerHour" min="0" /></div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-head"><h3>Booking Rules</h3></div>
+            <div class="form-grid">
+              <div class="fld"><label>Advance booking window (days)</label><input type="number" id="set_advanceDays" min="0" /></div>
+              <div class="fld"><label>Slot hold time (minutes)</label><input type="number" id="set_holdMinutes" min="0" /></div>
+              <div class="fld"><label>Booking ID prefix</label><input id="set_idPrefix" placeholder="NGPC" /></div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-head"><h3>Payment Methods</h3></div>
+            <div class="pay-method">
+              <div class="pm-head"><label class="switch"><input type="checkbox" id="pm_gcash" /><span class="sl"></span></label><label>GCash</label></div>
+              <div class="form-grid"><div class="fld"><label>Account name</label><input id="set_gcashName" /></div><div class="fld"><label>Number</label><input id="set_gcashNumber" /></div><div class="fld full"><label>QR image URL</label><input id="set_gcashQrUrl" placeholder="https://i.imgur.com/..." /></div></div>
+            </div>
+            <div class="pay-method">
+              <div class="pm-head"><label class="switch"><input type="checkbox" id="pm_maya" /><span class="sl"></span></label><label>Maya</label></div>
+              <div class="form-grid"><div class="fld"><label>Account name</label><input id="set_mayaName" /></div><div class="fld"><label>Number</label><input id="set_mayaNumber" /></div><div class="fld full"><label>QR image URL</label><input id="set_mayaQrUrl" placeholder="https://i.imgur.com/..." /></div></div>
+            </div>
+            <div class="pay-method">
+              <div class="pm-head"><label class="switch"><input type="checkbox" id="pm_bank" /><span class="sl"></span></label><label>Bank Transfer</label></div>
+              <div class="form-grid"><div class="fld"><label>Account name</label><input id="set_bankName" /></div><div class="fld"><label>Account number</label><input id="set_bankNumber" /></div><div class="fld full"><label>QR image URL</label><input id="set_bankQrUrl" placeholder="https://i.imgur.com/..." /></div></div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-head"><h3>Contact &amp; Links</h3></div>
+            <div class="form-grid">
+              <div class="fld"><label>Contact number <span style="color:var(--muted);font-weight:500">(revealed at countdown end)</span></label><input id="set_contactNumber" /></div>
+              <div class="fld"><label>Address name</label><input id="set_addressName" /></div>
+              <div class="fld full"><label>Address</label><input id="set_address" /></div>
+              <div class="fld full"><label>Google Maps link</label><input id="set_mapsLink" /></div>
+              <div class="fld"><label>Facebook name</label><input id="set_facebookName" /></div>
+              <div class="fld"><label>Facebook link</label><input id="set_facebookLink" /></div>
+              <div class="fld"><label>Instagram name</label><input id="set_instagramName" /></div>
+              <div class="fld"><label>Instagram link</label><input id="set_instagramLink" /></div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-head"><h3>Premium Support Contact</h3></div>
+            <p class="muted-sub" style="margin-bottom:14px;">Shown when an owner taps a locked premium feature (Memberships, Promo Codes, etc.). This is your contact as their system provider.</p>
+            <div class="form-grid">
+              <div class="fld"><label>Provider name</label><input id="set_supportName" placeholder="Layaw System" /></div>
+              <div class="fld"><label>Contact number / email</label><input id="set_supportContact" /></div>
+              <div class="fld full"><label>Contact link (Messenger / FB / website)</label><input id="set_supportLink" placeholder="https://m.me/..." /></div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-head"><h3>Staff Management</h3></div>
+            <p class="muted-sub" style="margin-bottom:14px;">Staff sign in with their <strong>name</strong> and a <strong>6-digit PIN</strong> on the admin page.</p>
+            <div id="adminsList"><div class="empty">Loading…</div></div>
+            <h4 style="font-size:14px;color:var(--navy);margin:18px 0 10px;">Add a staff member</h4>
+            <div class="add-row">
+              <input type="text" id="newAdminName" placeholder="Staff name" />
+              <input type="tel" id="newAdminPin" class="pin" placeholder="6-digit PIN" maxlength="6" inputmode="numeric" />
+            </div>
+            <div class="form-err" id="adminErr"></div>
+            <div style="margin-top:12px;"><button class="act act-confirm" id="addAdminBtn" style="max-width:200px;">Add staff</button></div>
+          </div>
+
+          <div class="save-bar">
+            <button class="act act-confirm" id="saveSettingsBtn" style="max-width:220px;">Save all settings</button>
+            <span class="msg" id="settingsMsg"></span>
+          </div>
         </div>
+      </section>
+
+      <!-- ===== COURTS ===== -->
+      <section id="sec-courts" class="sec">
+        <div class="sec-head"><h2>Courts</h2><p>Set each court's type and status. Your dashboard Court Status and booking grid update automatically.</p></div>
         <div class="card">
-          <div class="card-head"><h3>Club Settings</h3><span class="badge pending">Coming soon</span></div>
-          <ul class="soon-list">
-            <li>Club name &amp; logo</li><li>Brand color theme</li><li>Operating hours</li><li>Payment methods &amp; QR code</li><li>Booking rules &amp; cancellation policy</li>
-          </ul>
+          <div class="card-head"><h3>Your courts</h3></div>
+          <div id="courtsList"><div class="empty">Loading…</div></div>
+          <h4 style="font-size:14px;color:var(--navy);margin:18px 0 10px;">Add a court</h4>
+          <div class="form-grid">
+            <div class="fld"><label>Court name</label><input id="newCourtName" placeholder="Court 4" /></div>
+            <div class="fld"><label>Type</label><select id="newCourtType"><option value="Outdoor">Outdoor</option><option value="Covered">Covered</option></select></div>
+          </div>
+          <div class="form-err" id="courtErr"></div>
+          <div style="margin-top:12px;"><button class="act act-confirm" id="addCourtBtn" style="max-width:200px;">Add court</button></div>
+        </div>
+      </section>
+
+      <!-- ===== PAYMENTS ===== -->
+      <section id="sec-payments" class="sec">
+        <div class="sec-head"><h2>Payments</h2><p>Sales summary and transaction records from the last 90 days.</p></div>
+        <div class="kpi-grid" id="payKpis"></div>
+        <div class="dash-row3">
+          <div class="card"><div class="card-head"><h3>Revenue by method</h3></div><div id="payByMethod"><div class="empty">Loading…</div></div></div>
+          <div class="card"><div class="card-head"><h3>This month vs last</h3></div><div id="payTrend"><div class="empty">Loading…</div></div></div>
+        </div>
+        <div class="card" style="margin-top:16px;">
+          <div class="card-head"><h3>Recent transactions</h3><button class="btn-ghost" id="exportCsvBtn" style="margin-left:auto;">⬇ Export CSV</button></div>
+          <div class="table-scroll"><table class="txn-table" id="txnTable"><tbody><tr><td class="empty">Loading…</td></tr></tbody></table></div>
         </div>
       </section>
 
@@ -524,7 +659,7 @@ let db, auth, secondaryApp=null, SETTINGS=null, COURTS=[];
 let dayUnsub=null, pendingUnsub=null;
 let viewYear, viewMonth, selectedDate=null, currentView="list";
 let DAY=[], PENDING=[], CONTACTS={};
-let ALLB=[], analyticsLoaded=false, allContactsLoaded=false, curSection="dashboard";
+let ALLB=[], analyticsLoaded=false, allContactsLoaded=false, curSection="dashboard", COURTS_ALL=[];
 
 try { firebase.initializeApp(firebaseConfig); db=firebase.firestore(); auth=firebase.auth(); auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(()=>{}); }
 catch(e){ document.getElementById("boot").textContent="Config error. Check the Firebase config at the top of this file."; }
@@ -620,7 +755,9 @@ async function openSection(name){
   if(name==="dashboard") renderDashboard();
   else if(name==="customers") renderCustomers();
   else if(name==="reports") renderReports();
-  else if(name==="settings") loadAdmins();
+  else if(name==="courts") renderCourts();
+  else if(name==="payments") renderPayments();
+  else if(name==="settings"){ loadAdmins(); fillSettings(); }
 }
 function showSoon(title,desc){
   curSection="soon";
@@ -1049,6 +1186,147 @@ $("addAdminBtn").onclick=async ()=>{
     $("newAdminName").value=""; $("newAdminPin").value=""; toast("Staff added."); loadAdmins();
   }catch(e){ console.error(e); const map={"auth/email-already-in-use":"A staff member with that name already exists. Use a different name.","auth/weak-password":"PIN must be at least 6 digits.","auth/invalid-email":"That name can't be used. Try a simpler name."}; $("adminErr").textContent=map[e.code]||"Could not add staff. Please try again."; }
   finally{ btn.disabled=false; btn.textContent="Add staff"; }
+};
+
+/* ---------- settings ---------- */
+function applyBranding(){
+  const s=SETTINGS||{}; const root=document.documentElement.style;
+  if(s.colorPrimary){ root.setProperty("--navy",s.colorPrimary); root.setProperty("--navy-d",s.colorPrimaryDark||darken(s.colorPrimary,0.68)); root.setProperty("--sidebar",darken(s.colorPrimary,0.36)); root.setProperty("--sidebar-2",darken(s.colorPrimary,0.50)); }
+  if(s.colorAccent){ root.setProperty("--green",s.colorAccent); root.setProperty("--green-d",s.colorAccentDark||darken(s.colorAccent,0.82)); }
+  const name=s.businessName||"Dashboard"; $("loginBiz").textContent=name; $("topBiz").textContent=name; $("footBiz").textContent=name; document.title=name+" — Owner";
+  if(s.tagline) $("brandSub").textContent=s.tagline;
+  $("userAvatar").textContent=(name.trim()[0]||"O").toUpperCase();
+  $("appFoot").textContent="© "+new Date().getFullYear()+" "+name+" · Powered by Layaw System";
+  if(s.logoUrl){ $("loginLogo").src=s.logoUrl; $("loginLogo").style.display="block"; [$("brandLogo"),$("footLogo")].forEach(el=>{ el.innerHTML=""; const im=document.createElement("img"); im.src=s.logoUrl; im.style.cssText="width:100%;height:100%;object-fit:cover;border-radius:inherit;"; el.appendChild(im); }); }
+}
+function setVal(id,v){ const el=$(id); if(el) el.value=(v==null?"":v); }
+function setChk(id,v){ const el=$(id); if(el) el.checked=!!v; }
+function fillSettings(){
+  const s=SETTINGS||{};
+  setVal("set_businessName",s.businessName); setVal("set_tagline",s.tagline); setVal("set_logoUrl",s.logoUrl);
+  const cp=s.colorPrimary||"#15455F", ca=s.colorAccent||"#1FB373";
+  setVal("set_colorPrimary",cp); setVal("set_colorPrimaryHex",cp); setVal("set_colorAccent",ca); setVal("set_colorAccentHex",ca);
+  setVal("set_openHour",s.openHour); setVal("set_closeHour",s.closeHour); setVal("set_slotMinutes",s.slotMinutes); setVal("set_ratePerHour",s.ratePerHour);
+  setVal("set_advanceDays",s.advanceDays); setVal("set_holdMinutes",s.holdMinutes); setVal("set_idPrefix",s.idPrefix);
+  const pm=(s.paymentMethods||[]).map(x=>String(x).toLowerCase());
+  setChk("pm_gcash",pm.includes("gcash")); setChk("pm_maya",pm.includes("maya")); setChk("pm_bank",pm.includes("bank"));
+  setVal("set_gcashName",s.gcashName); setVal("set_gcashNumber",s.gcashNumber); setVal("set_gcashQrUrl",s.gcashQrUrl);
+  setVal("set_mayaName",s.mayaName); setVal("set_mayaNumber",s.mayaNumber); setVal("set_mayaQrUrl",s.mayaQrUrl);
+  setVal("set_bankName",s.bankName); setVal("set_bankNumber",s.bankNumber); setVal("set_bankQrUrl",s.bankQrUrl);
+  setVal("set_contactNumber",s.contactNumber); setVal("set_addressName",s.addressName); setVal("set_address",s.address); setVal("set_mapsLink",s.mapsLink);
+  setVal("set_facebookName",s.facebookName); setVal("set_facebookLink",s.facebookLink); setVal("set_instagramName",s.instagramName); setVal("set_instagramLink",s.instagramLink);
+  setVal("set_supportName",s.supportName); setVal("set_supportContact",s.supportContact); setVal("set_supportLink",s.supportLink);
+}
+function bindColor(pick,hex){ const p=$(pick),h=$(hex); if(!p||!h) return; p.addEventListener("input",()=>h.value=p.value); h.addEventListener("input",()=>{ let v=h.value.trim(); if(v && v[0]!=="#") v="#"+v; if(/^#[0-9a-fA-F]{6}$/.test(v)) p.value=v; }); }
+bindColor("set_colorPrimary","set_colorPrimaryHex"); bindColor("set_colorAccent","set_colorAccentHex");
+function sNum(id,def){ const v=$(id).value.trim(); if(v==="")return def; const n=Number(v); return isNaN(n)?def:n; }
+function sStr(id){ return $(id).value.trim(); }
+$("saveSettingsBtn").onclick=async ()=>{
+  const btn=$("saveSettingsBtn"), msg=$("settingsMsg"); btn.disabled=true; msg.style.color="var(--green-d)"; msg.textContent="Saving…";
+  const cp=$("set_colorPrimary").value, ca=$("set_colorAccent").value;
+  const methods=[]; if($("pm_gcash").checked)methods.push("GCash"); if($("pm_maya").checked)methods.push("Maya"); if($("pm_bank").checked)methods.push("Bank");
+  const data={
+    businessName:sStr("set_businessName"), tagline:sStr("set_tagline"), logoUrl:sStr("set_logoUrl"),
+    colorPrimary:cp, colorPrimaryDark:darken(cp,0.68), colorAccent:ca, colorAccentDark:darken(ca,0.82),
+    openHour:sNum("set_openHour",8), closeHour:sNum("set_closeHour",22), slotMinutes:sNum("set_slotMinutes",60), ratePerHour:sNum("set_ratePerHour",0),
+    advanceDays:sNum("set_advanceDays",7), holdMinutes:sNum("set_holdMinutes",0), idPrefix:sStr("set_idPrefix"),
+    paymentMethods:methods,
+    gcashName:sStr("set_gcashName"), gcashNumber:sStr("set_gcashNumber"), gcashQrUrl:sStr("set_gcashQrUrl"),
+    mayaName:sStr("set_mayaName"), mayaNumber:sStr("set_mayaNumber"), mayaQrUrl:sStr("set_mayaQrUrl"),
+    bankName:sStr("set_bankName"), bankNumber:sStr("set_bankNumber"), bankQrUrl:sStr("set_bankQrUrl"),
+    contactNumber:sStr("set_contactNumber"), addressName:sStr("set_addressName"), address:sStr("set_address"), mapsLink:sStr("set_mapsLink"),
+    facebookName:sStr("set_facebookName"), facebookLink:sStr("set_facebookLink"), instagramName:sStr("set_instagramName"), instagramLink:sStr("set_instagramLink"),
+    supportName:sStr("set_supportName"), supportContact:sStr("set_supportContact"), supportLink:sStr("set_supportLink")
+  };
+  try{
+    await db.collection("settings").doc("config").set(data,{merge:true});
+    SETTINGS=Object.assign(SETTINGS||{},data); applyBranding();
+    msg.textContent="Saved ✓"; toast("Settings saved."); setTimeout(()=>{ msg.textContent=""; },3000);
+  }catch(e){ console.error(e); msg.style.color="var(--cancel)"; msg.textContent="Could not save. Please try again."; }
+  finally{ btn.disabled=false; }
+};
+
+/* ---------- courts ---------- */
+async function refreshCourts(){
+  try{
+    const cs=await db.collection("courts").get();
+    COURTS_ALL=[]; cs.forEach(d=>{ const c=d.data(); COURTS_ALL.push({id:d.id,name:c.name||"Court",type:c.type||"Outdoor",status:c.status||"",active:c.active!==false}); });
+    COURTS_ALL.sort((a,b)=>a.name.localeCompare(b.name));
+    COURTS=COURTS_ALL.filter(c=>c.active).map(c=>({id:c.id,name:c.name,type:c.type,status:c.status}));
+    renderSchedHead();
+  }catch(e){ console.error(e); }
+}
+async function renderCourts(){
+  $("courtsList").innerHTML='<div class="empty">Loading…</div>';
+  await refreshCourts();
+  const wrap=$("courtsList");
+  if(!COURTS_ALL.length){ wrap.innerHTML='<div class="empty">No courts yet. Add one below.</div>'; return; }
+  wrap.innerHTML="";
+  COURTS_ALL.forEach(c=>{
+    const row=document.createElement("div"); row.className="court-edit";
+    row.innerHTML='<input value="'+esc(c.name)+'" data-id="'+c.id+'" data-f="name" />'+
+      '<select data-id="'+c.id+'" data-f="type"><option'+(c.type==="Outdoor"?" selected":"")+'>Outdoor</option><option'+(c.type==="Covered"?" selected":"")+'>Covered</option></select>'+
+      '<select data-id="'+c.id+'" data-f="status"><option value=""'+(c.status!=="maintenance"?" selected":"")+'>Available</option><option value="maintenance"'+(c.status==="maintenance"?" selected":"")+'>Maintenance</option></select>'+
+      '<label class="switch"><input type="checkbox" data-id="'+c.id+'" data-f="active"'+(c.active?" checked":"")+' /><span class="sl"></span></label>'+
+      '<div class="ce-act"><button class="mini-btn danger" data-del="'+c.id+'">Delete</button></div>';
+    wrap.appendChild(row);
+  });
+  wrap.querySelectorAll("[data-f]").forEach(el=>{
+    el.addEventListener("change",async ()=>{
+      const id=el.getAttribute("data-id"), f=el.getAttribute("data-f");
+      const v= el.type==="checkbox"?el.checked:el.value.trim();
+      try{ const o={}; o[f]=v; await db.collection("courts").doc(id).update(o); toast("Court updated."); await refreshCourts(); }
+      catch(e){ console.error(e); toast("Could not update court."); }
+    });
+  });
+  wrap.querySelectorAll("[data-del]").forEach(b=>b.onclick=async ()=>{
+    if(!confirm("Delete this court? This cannot be undone.")) return;
+    try{ await db.collection("courts").doc(b.getAttribute("data-del")).delete(); toast("Court deleted."); renderCourts(); }
+    catch(e){ console.error(e); toast("Could not delete court."); }
+  });
+}
+$("addCourtBtn").onclick=async ()=>{
+  const name=$("newCourtName").value.trim(), type=$("newCourtType").value; $("courtErr").textContent="";
+  if(!name){ $("courtErr").textContent="Please enter a court name."; return; }
+  const btn=$("addCourtBtn"); btn.disabled=true; btn.textContent="Adding…";
+  try{ await db.collection("courts").add({name:name,type:type,status:"",active:true,createdAt:firebase.firestore.FieldValue.serverTimestamp()}); $("newCourtName").value=""; toast("Court added."); renderCourts(); }
+  catch(e){ console.error(e); $("courtErr").textContent="Could not add court."; }
+  finally{ btn.disabled=false; btn.textContent="Add court"; }
+};
+
+/* ---------- payments ---------- */
+function payIcon(cls){ return '<div class="kpi-ico '+cls+'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="13" rx="2"/><path d="M2 10h20"/></svg></div>'; }
+function payKpi(label,val,cls,sub){ return '<div class="kpi">'+payIcon(cls)+'<div class="kpi-body"><div class="kl">'+label+'</div><div class="kn">'+val+'</div>'+(sub?'<div class="kd">'+sub+'</div>':'')+'</div></div>'; }
+async function renderPayments(){
+  $("payByMethod").innerHTML='<div class="empty">Loading…</div>';
+  await ensureAnalytics(); await ensureAllContacts();
+  const conf=ALLB.filter(b=>b.status==="confirmed");
+  const totalRev=conf.reduce((s,b)=>s+Number(b.amount||0),0);
+  const pend=orderGroups(ALLB.filter(b=>b.status==="pending"));
+  const pendAmt=ALLB.filter(b=>b.status==="pending").reduce((s,b)=>s+Number(b.amount||0),0);
+  const thisM=confRev(ALLB.filter(b=>inMonth(b,0))), lastM=confRev(ALLB.filter(b=>inMonth(b,1)));
+  $("payKpis").innerHTML=
+    payKpi("Total revenue (90d)",peso(totalRev),"rev")+
+    payKpi("This month",peso(thisM),"bk")+
+    payKpi("Pending amount",peso(pendAmt),"pend",pend.length+" order"+(pend.length===1?"":"s"))+
+    payKpi("Transactions",String(conf.length),"occ");
+  const m={}; conf.forEach(b=>{ const k=b.paymentMethod||"Other"; m[k]=(m[k]||0)+Number(b.amount||0); });
+  const ents=Object.entries(m).sort((a,b)=>b[1]-a[1]); const mmax=Math.max(1,...ents.map(e=>e[1]));
+  $("payByMethod").innerHTML=ents.length?ents.map(([k,v])=>'<div class="barline"><span class="bl-l">'+esc(k)+'</span><span class="bl-track"><span class="bl-fill" style="width:'+(v/mmax*100)+'%"></span></span><span class="bl-v">'+peso(v)+'</span></div>').join(""):'<div class="empty">No payments yet.</div>';
+  const tp=lastM>0?Math.round((thisM-lastM)/lastM*100):(thisM>0?100:0);
+  $("payTrend").innerHTML='<div class="big-stat">'+peso(thisM)+'</div><div class="big-sub">'+(tp>=0?'<span style="color:var(--green-d);font-weight:700">▲ '+tp+'%</span>':'<span style="color:var(--cancel);font-weight:700">▼ '+Math.abs(tp)+'%</span>')+' vs last month ('+peso(lastM)+')</div>';
+  const sorted=conf.slice().sort((a,b)=>a.date<b.date?1:-1).slice(0,25);
+  const body=sorted.map(b=>'<tr><td>'+niceDate(b.date)+'</td><td>'+esc(nameOf(b))+'</td><td>'+esc(b.court||"—")+'</td><td><span class="method">'+esc(b.paymentMethod||"—")+'</span></td><td class="amt">'+peso(b.amount)+'</td></tr>').join("");
+  $("txnTable").innerHTML='<thead><tr><th>Date</th><th>Player</th><th>Court</th><th>Method</th><th style="text-align:right">Amount</th></tr></thead><tbody>'+(body||'<tr><td colspan="5" class="empty">No transactions yet.</td></tr>')+'</tbody>';
+}
+$("exportCsvBtn").onclick=async ()=>{
+  await ensureAnalytics(); await ensureAllContacts();
+  const rows=[["Date","Booking ID","Court","Slots","Amount","Method","Status","Player","Contact"]];
+  ALLB.slice().sort((a,b)=>a.date<b.date?1:-1).forEach(b=>{ if(b.status==="cancelled")return; rows.push([b.date||"",b.bookingId||b.id,b.court||"",(b.slots||[]).join(" "),b.amount||0,b.paymentMethod||"",b.status||"",nameOf(b),contactOf(b)]); });
+  const csv=rows.map(r=>r.map(c=>{ const s=String(c==null?"":c); return /[",\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s; }).join(",")).join("\n");
+  const blob=new Blob([csv],{type:"text/csv;charset=utf-8;"}); const url=URL.createObjectURL(blob);
+  const a=document.createElement("a"); a.href=url; a.download=(((SETTINGS&&SETTINGS.businessName)||"club").replace(/[^a-z0-9]+/gi,"_").toLowerCase())+"_transactions.csv";
+  document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url); toast("CSV exported.");
 };
 
 loadBase();
