@@ -249,7 +249,7 @@ let dayUnsub=null, pendingUnsub=null;
 let viewYear, viewMonth, selectedDate=null, currentView="list";
 let DAY=[], PENDING=[];
 
-try { firebase.initializeApp(firebaseConfig); db=firebase.firestore(); auth=firebase.auth(); }
+try { firebase.initializeApp(firebaseConfig); db=firebase.firestore(); auth=firebase.auth(); auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(()=>{}); }
 catch(e){ document.getElementById("boot").textContent="Config error. Check the Firebase config at the top of this file."; }
 
 const $=(id)=>document.getElementById(id);
@@ -307,13 +307,14 @@ async function loadBase(){
 auth && auth.onAuthStateChanged(async user=>{
   $("boot").style.display="none";
   if(user){
-    try{ const a=await db.collection("admins").doc(user.uid).get(); if(!a.exists || a.data().active===false){ $("loginErr").textContent="This account is no longer active. Contact the owner."; await auth.signOut(); return; } }
-    catch(e){ $("loginErr").textContent="This account is no longer active. Contact the owner."; await auth.signOut(); return; }
+    try{ const a=await db.collection("admins").doc(user.uid).get(); if(a.exists && a.data().active===false){ $("loginErr").textContent="This account has been disabled. Contact the owner."; await auth.signOut(); return; } }
+    catch(e){ /* couldn't verify — proceed; security rules still enforce access */ }
     $("loginView").style.display="none"; $("dashView").style.display="block"; startDashboard();
   }
   else { $("dashView").style.display="none"; $("loginView").style.display="grid"; if(dayUnsub){dayUnsub();} if(pendingUnsub){pendingUnsub();} }
 });
-function adminEmail(name){ const slug=String(name||"").trim().toLowerCase().replace(/[^a-z0-9]+/g,""); return slug?(slug+"@courtadmin.app"):""; }
+function adminSlug(name){ return String(name||"").trim().toLowerCase().replace(/[^a-z0-9]+/g,""); }
+function adminEmail(name){ const s=adminSlug(name); return s?(s+"@courtadmin.app"):""; }
 $("signinBtn").onclick=async ()=>{
   const name=$("adminName").value.trim(), pin=$("adminPin").value.trim(); $("loginErr").textContent="";
   if(!name||!pin){ $("loginErr").textContent="Please enter your name and PIN."; return; }
