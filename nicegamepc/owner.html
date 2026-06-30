@@ -531,20 +531,28 @@ async function loadAdmins(){
   const wrap=$("adminsList"); wrap.innerHTML='<div class="empty">Loading…</div>';
   try{
     const snap=await db.collection("admins").get();
-    const rows=[]; snap.forEach(d=>rows.push({uid:d.id, ...d.data()}));
+    const rows=[]; snap.forEach(d=>{ const x=d.data(); if(x.removed===true) return; rows.push({uid:d.id, ...x}); });
     rows.sort((a,b)=>String(a.name||"").localeCompare(String(b.name||"")));
     if(!rows.length){ wrap.innerHTML='<div class="empty">No admins yet. Add one below.</div>'; return; }
     wrap.innerHTML="";
     rows.forEach(r=>{
       const active=r.active!==false;
       const row=document.createElement("div"); row.className="admin-row";
-      row.innerHTML='<div><div class="an">'+(r.name||"Admin")+'</div></div><div class="ar"><span class="badge '+(active?"active":"disabled")+'">'+(active?"Active":"Disabled")+'</span><button class="mini-btn '+(active?"danger":"")+'" data-uid="'+r.uid+'" data-act="'+(active?"disable":"enable")+'">'+(active?"Disable":"Enable")+'</button></div>';
+      row.innerHTML='<div><div class="an">'+(r.name||"Admin")+'</div></div><div class="ar"><span class="badge '+(active?"active":"disabled")+'">'+(active?"Active":"Disabled")+'</span>'+
+        '<button class="mini-btn" data-uid="'+r.uid+'" data-act="'+(active?"disable":"enable")+'">'+(active?"Disable":"Enable")+'</button>'+
+        '<button class="mini-btn danger" data-uid="'+r.uid+'" data-act="remove">Remove</button></div>';
       wrap.appendChild(row);
     });
-    wrap.querySelectorAll(".mini-btn").forEach(btn=>btn.onclick=()=>toggleAdmin(btn.getAttribute("data-uid"),btn.getAttribute("data-act")));
+    wrap.querySelectorAll(".mini-btn").forEach(btn=>btn.onclick=()=>adminAction(btn.getAttribute("data-uid"),btn.getAttribute("data-act")));
   }catch(e){ console.error(e); wrap.innerHTML='<div class="empty">Could not load admins.</div>'; }
 }
-async function toggleAdmin(uid,act){
+async function adminAction(uid,act){
+  if(act==="remove"){
+    if(!confirm("Remove this admin? They will lose access and be removed from the list.")) return;
+    try{ await db.collection("admins").doc(uid).set({active:false,removed:true},{merge:true}); toast("Admin removed."); loadAdmins(); }
+    catch(e){ console.error(e); toast("Could not remove admin."); }
+    return;
+  }
   const enable=act==="enable";
   if(!enable && !confirm("Disable this admin? They won't be able to sign in or manage bookings.")) return;
   try{ await db.collection("admins").doc(uid).update({active:enable}); toast(enable?"Admin enabled.":"Admin disabled."); loadAdmins(); }
