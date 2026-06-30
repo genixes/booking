@@ -16,6 +16,7 @@
     storageBucket: "layaw-pickleball.firebasestorage.app",
     messagingSenderId: "940525720373",
     appId: "1:940525720373:web:dfbe3e353e1402bf27727c"
+
   };
 </script>
 
@@ -175,30 +176,6 @@
   .toast { position:fixed; left:50%; bottom:80px; transform:translateX(-50%); background:var(--navy-d); color:#fff; padding:14px 20px; border-radius:12px; font-weight:600; box-shadow:var(--shadow); opacity:0; pointer-events:none; transition:opacity .2s; max-width:90%; text-align:center; z-index:60; }
   .toast.show { opacity:1; }
   @media (prefers-reduced-motion: reduce){ *{ transition:none !important; } }
-
-
-html, body { max-width: 100%; overflow-x: hidden; }
-.grid-layout > * { min-width: 0; }
-.table-scroll { max-width: 100%; }
-img { max-width: 100%; }
-@media (max-width: 1000px) { .hero-wrap { height: 190px; } }
-
-html, body { max-width: 100%; overflow-x: hidden; }
-.grid-layout > * { min-width: 0; }
-.table-scroll { max-width: 100%; }
-img { max-width: 100%; }
-@media (max-width: 1000px) { .hero-wrap { height: 190px; } }
-
-table.slots thead th { position: sticky; top: 0; background: var(--card); z-index: 2; }
-table.slots thead th:first-child { left: 0; z-index: 3; }
-table.slots .time-cell { position: sticky; left: 0; background: var(--card); z-index: 2; }
-@media (min-width: 1001px) {
-  .grid-layout > div { position: sticky; top: 18px; align-self: start; }
-  .table-scroll { max-height: calc(100vh - 240px); overflow-y: auto; }
-}
-
-
-
 </style>
 </head>
 <body>
@@ -578,7 +555,7 @@ $("submitBtn").onclick=async ()=>{
         batch.set(ref,{ bookingId:bookingId, date:date, court:court, slots:slots, startTime:slots[0], endTime:slots[slots.length-1], amount:amount, paymentMethod:chosenPayment||"", status:"pending", createdAt:firebase.firestore.FieldValue.serverTimestamp() });
       });
     });
-    // Booker PII is kept private (managers only)
+    // Booker PII is kept private (managers only) — never in the public bookings docs
     batch.set(db.collection("bookingContacts").doc(bookingId),{ bookingId:bookingId, bookerName:name, contact:contact, email:email, createdAt:firebase.firestore.FieldValue.serverTimestamp() });
     await batch.commit();
     if(receiptData){ try{ await db.collection("receipts").doc(bookingId).set({ bookingId:bookingId, image:receiptData, createdAt:firebase.firestore.FieldValue.serverTimestamp() }); }catch(e){ console.warn("receipt save failed",e); } }
