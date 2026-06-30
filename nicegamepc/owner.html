@@ -16,6 +16,7 @@
     storageBucket: "layaw-pickleball.firebasestorage.app",
     messagingSenderId: "940525720373",
     appId: "1:940525720373:web:dfbe3e353e1402bf27727c"
+
   };
 </script>
 
@@ -557,6 +558,7 @@ $("addAdminBtn").onclick=async ()=>{
   try{
     const email=adminEmail(name);
     const sec=getSecondary();
+    try{ await sec.auth().setPersistence(firebase.auth.Auth.Persistence.NONE); }catch(_){}
     const cred=await sec.auth().createUserWithEmailAndPassword(email,pin);
     const uid=cred.user.uid;
     await db.collection("admins").doc(uid).set({ name:name, email:email, slug:adminSlug(name), active:true, createdAt:firebase.firestore.FieldValue.serverTimestamp() });
