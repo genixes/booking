@@ -510,7 +510,8 @@ function showPayDetail(m){
     if(m.number) html+='<button class="copy-btn" id="copyNo">Copy</button>';
     html+='</div>';
   }
-  html+='<div class="exact">Please send the exact amount.</div>';
+  let payTotal=0; selected.forEach(k=>{ payTotal+=slotCost(hm2min(k.split("|")[1])); });
+  html+='<div class="exact">Please send the exact amount: <strong style="color:var(--navy);font-size:17px;">'+peso(payTotal)+'</strong></div>';
   d.innerHTML=html;
   if(m.number){ const c=$("copyNo"); if(c) c.onclick=()=>{ navigator.clipboard.writeText(m.number).then(()=>toast("Number copied!")).catch(()=>toast("Copy failed")); }; }
 }
