@@ -16,7 +16,6 @@
     storageBucket: "layaw-pickleball.firebasestorage.app",
     messagingSenderId: "940525720373",
     appId: "1:940525720373:web:dfbe3e353e1402bf27727c"
-
   };
 </script>
 
@@ -69,7 +68,7 @@
   .signout { background:rgba(255,255,255,.14); color:#fff; border:none; padding:10px 14px; border-radius:10px; font:inherit; font-weight:600; cursor:pointer; }
   .signout:hover { background:rgba(255,255,255,.24); }
 
-  .container { max-width:920px; margin:0 auto; padding:18px 16px 60px; }
+  .container { max-width:1040px; margin:0 auto; padding:18px 16px 60px; }
   .card { background:var(--card); border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow); padding:18px; }
   .card h3 { font-size:16px; font-weight:800; color:var(--navy); margin-bottom:14px; }
 
@@ -91,6 +90,10 @@
   @media (max-width:520px){ .controls{ flex-direction:column; align-items:stretch; } .controls .grp{ width:100%; } }
 
   .stats { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin:16px 0; }
+  .book-2col { display:grid; grid-template-columns:320px 1fr; gap:16px; align-items:start; }
+  .book-2col .stats { margin:0 0 14px; }
+  .book-left .card { position:sticky; top:16px; }
+  @media (max-width:900px){ .book-2col { grid-template-columns:1fr; } .book-left .card { position:static; } .book-2col .stats { margin:14px 0; } }
   .stat { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:14px 16px; box-shadow:var(--shadow); }
   .stat .n { font-size:24px; font-weight:800; color:var(--navy); }
   .stat .l { font-size:12px; color:var(--muted); font-weight:600; }
@@ -194,34 +197,40 @@
   </div>
 
   <div class="container">
-    <div class="card">
-      <h3>Select a date</h3>
-      <div class="cal-nav">
-        <button class="btn-ghost" id="prevMonth">‹</button>
-        <button class="btn-ghost today" id="todayBtn">Today</button>
-        <button class="btn-ghost" id="nextMonth">›</button>
-      </div>
-      <div class="cal-month" id="calMonth"></div>
-      <div class="cal-grid" id="calGrid"></div>
-    </div>
-
-    <div class="stats">
-      <div class="stat"><div class="n" id="stPending">0</div><div class="l">Pending</div></div>
-      <div class="stat"><div class="n" id="stConfirmed">0</div><div class="l">Confirmed</div></div>
-      <div class="stat"><div class="n" id="stRevenue">₱0</div><div class="l">Day total</div></div>
-    </div>
-
-    <div class="card">
-      <div class="view-head">
-        <h3 id="dayTitle">Bookings</h3>
-        <div class="toggle">
-          <button id="tabList" class="on">List</button>
-          <button id="tabGrid">Grid</button>
+    <div class="book-2col">
+      <div class="book-left">
+        <div class="card">
+          <h3>Select a date</h3>
+          <div class="cal-nav">
+            <button class="btn-ghost" id="prevMonth">‹</button>
+            <button class="btn-ghost today" id="todayBtn">Today</button>
+            <button class="btn-ghost" id="nextMonth">›</button>
+          </div>
+          <div class="cal-month" id="calMonth"></div>
+          <div class="cal-grid" id="calGrid"></div>
         </div>
       </div>
-      <div id="listView"></div>
-      <div id="gridView" style="display:none;">
-        <div class="table-scroll"><table class="sched"><thead><tr id="schedHead"></tr></thead><tbody id="schedBody"></tbody></table></div>
+
+      <div class="book-right">
+        <div class="stats">
+          <div class="stat"><div class="n" id="stPending">0</div><div class="l">Pending</div></div>
+          <div class="stat"><div class="n" id="stConfirmed">0</div><div class="l">Confirmed</div></div>
+          <div class="stat"><div class="n" id="stRevenue">₱0</div><div class="l">Day total</div></div>
+        </div>
+
+        <div class="card">
+          <div class="view-head">
+            <h3 id="dayTitle">Bookings</h3>
+            <div class="toggle">
+              <button id="tabList" class="on">List</button>
+              <button id="tabGrid">Grid</button>
+            </div>
+          </div>
+          <div id="listView"></div>
+          <div id="gridView" style="display:none;">
+            <div class="table-scroll"><table class="sched"><thead><tr id="schedHead"></tr></thead><tbody id="schedBody"></tbody></table></div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -249,7 +258,7 @@ let dayUnsub=null, pendingUnsub=null;
 let viewYear, viewMonth, selectedDate=null, currentView="list";
 let DAY=[], PENDING=[];
 
-try { firebase.initializeApp(firebaseConfig); db=firebase.firestore(); auth=firebase.auth(); auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(()=>{}); }
+try { const app=firebase.initializeApp(firebaseConfig,"layawAdmin"); db=app.firestore(); auth=app.auth(); auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(()=>{}); }
 catch(e){ document.getElementById("boot").textContent="Config error. Check the Firebase config at the top of this file."; }
 
 const $=(id)=>document.getElementById(id);
@@ -307,8 +316,14 @@ async function loadBase(){
 auth && auth.onAuthStateChanged(async user=>{
   $("boot").style.display="none";
   if(user){
-    try{ const a=await db.collection("admins").doc(user.uid).get(); if(a.exists && a.data().active===false){ $("loginErr").textContent="This account has been disabled. Contact the owner."; await auth.signOut(); return; } }
-    catch(e){ /* couldn't verify — proceed; security rules still enforce access */ }
+    let ok=false, msg="";
+    try{
+      const a=await db.collection("admins").doc(user.uid).get();
+      if(!a.exists){ msg="This is the owner account. Staff sign in with their name and 6-digit PIN."; }
+      else if(a.data().removed===true || a.data().active===false){ msg="This staff account has been removed or disabled. Contact the owner."; }
+      else { ok=true; }
+    }catch(e){ msg="Could not verify your access. Please try again."; }
+    if(!ok){ $("dashView").style.display="none"; $("loginView").style.display="grid"; $("loginErr").textContent=msg; return; }
     $("loginView").style.display="none"; $("dashView").style.display="block"; startDashboard();
   }
   else { $("dashView").style.display="none"; $("loginView").style.display="grid"; if(dayUnsub){dayUnsub();} if(pendingUnsub){pendingUnsub();} }
