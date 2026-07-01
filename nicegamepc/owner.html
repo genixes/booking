@@ -16,7 +16,6 @@
     storageBucket: "layaw-pickleball.firebasestorage.app",
     messagingSenderId: "940525720373",
     appId: "1:940525720373:web:dfbe3e353e1402bf27727c"
-
   };
 </script>
 
@@ -182,6 +181,10 @@
   .cal-day:hover:not(.active) { background:var(--open-bg); }
   .cal-day.active { background:var(--navy); color:#fff; }
   .stats { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin:16px 0; }
+  .book-2col { display:grid; grid-template-columns:336px 1fr; gap:16px; align-items:start; }
+  .book-2col .stats { margin:0 0 14px; }
+  .book-left .card { position:sticky; top:82px; }
+  @media (max-width:980px){ .book-2col { grid-template-columns:1fr; } .book-left .card { position:static; } .book-2col .stats { margin:14px 0; } }
   .stat { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:14px 16px; box-shadow:var(--shadow); }
   .stat .n { font-size:24px; font-weight:800; color:var(--navy); }
   .stat .l { font-size:12px; color:var(--muted); font-weight:600; }
@@ -449,28 +452,34 @@
 
       <!-- ===== BOOKINGS ===== -->
       <section id="sec-bookings" class="sec">
-        <div class="card">
-          <h3 style="font-size:16px;font-weight:800;color:var(--navy);margin-bottom:14px;">Select a date</h3>
-          <div class="cal-nav">
-            <button class="btn-ghost" id="prevMonth">‹</button>
-            <button class="btn-ghost today" id="todayBtn">Today</button>
-            <button class="btn-ghost" id="nextMonth">›</button>
+        <div class="book-2col">
+          <div class="book-left">
+            <div class="card">
+              <h3 style="font-size:16px;font-weight:800;color:var(--navy);margin-bottom:14px;">Select a date</h3>
+              <div class="cal-nav">
+                <button class="btn-ghost" id="prevMonth">‹</button>
+                <button class="btn-ghost today" id="todayBtn">Today</button>
+                <button class="btn-ghost" id="nextMonth">›</button>
+              </div>
+              <div class="cal-month" id="calMonth"></div>
+              <div class="cal-grid" id="calGrid"></div>
+            </div>
           </div>
-          <div class="cal-month" id="calMonth"></div>
-          <div class="cal-grid" id="calGrid"></div>
-        </div>
-        <div class="stats">
-          <div class="stat"><div class="n" id="stPending">0</div><div class="l">Pending</div></div>
-          <div class="stat"><div class="n" id="stConfirmed">0</div><div class="l">Confirmed</div></div>
-          <div class="stat"><div class="n" id="stRevenue">₱0</div><div class="l">Day total</div></div>
-        </div>
-        <div class="card">
-          <div class="view-head">
-            <h3 id="dayTitle">Bookings</h3>
-            <div class="toggle"><button id="tabList" class="on">List</button><button id="tabGrid">Grid</button></div>
+          <div class="book-right">
+            <div class="stats">
+              <div class="stat"><div class="n" id="stPending">0</div><div class="l">Pending</div></div>
+              <div class="stat"><div class="n" id="stConfirmed">0</div><div class="l">Confirmed</div></div>
+              <div class="stat"><div class="n" id="stRevenue">₱0</div><div class="l">Day total</div></div>
+            </div>
+            <div class="card">
+              <div class="view-head">
+                <h3 id="dayTitle">Bookings</h3>
+                <div class="toggle"><button id="tabList" class="on">List</button><button id="tabGrid">Grid</button></div>
+              </div>
+              <div id="listView"></div>
+              <div id="gridView" style="display:none;"><div class="table-scroll"><table class="sched"><thead><tr id="schedHead"></tr></thead><tbody id="schedBody"></tbody></table></div></div>
+            </div>
           </div>
-          <div id="listView"></div>
-          <div id="gridView" style="display:none;"><div class="table-scroll"><table class="sched"><thead><tr id="schedHead"></tr></thead><tbody id="schedBody"></tbody></table></div></div>
         </div>
       </section>
 
@@ -634,7 +643,7 @@ let viewYear, viewMonth, selectedDate=null, currentView="list";
 let DAY=[], PENDING=[], CONTACTS={};
 let ALLB=[], analyticsLoaded=false, allContactsLoaded=false, curSection="dashboard";
 
-try { firebase.initializeApp(firebaseConfig); db=firebase.firestore(); auth=firebase.auth(); auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(()=>{}); }
+try { const app=firebase.initializeApp(firebaseConfig,"layawOwner"); db=app.firestore(); auth=app.auth(); auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(()=>{}); }
 catch(e){ document.getElementById("boot").textContent="Config error. Check the Firebase config at the top of this file."; }
 
 const $=(id)=>document.getElementById(id);
@@ -693,9 +702,14 @@ async function loadBase(){
   $("datePill").textContent=new Date().toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"})+" ("+new Date().toLocaleDateString("en-US",{weekday:"short"})+")";
 }
 
-auth && auth.onAuthStateChanged(user=>{
+auth && auth.onAuthStateChanged(async user=>{
   $("boot").style.display="none";
-  if(user){ $("loginView").style.display="none"; $("dashView").style.display="block"; startDashboard(); }
+  if(user){
+    let isStaff=false;
+    try{ const a=await db.collection("admins").doc(user.uid).get(); isStaff=a.exists; }catch(e){ isStaff=false; }
+    if(isStaff){ $("dashView").style.display="none"; $("loginView").style.display="grid"; $("loginErr").textContent="This is a staff account. Please sign in with the owner account."; return; }
+    $("loginView").style.display="none"; $("dashView").style.display="block"; startDashboard();
+  }
   else { $("dashView").style.display="none"; $("loginView").style.display="grid"; if(dayUnsub){dayUnsub();} if(pendingUnsub){pendingUnsub();} }
 });
 $("signinBtn").onclick=async ()=>{
@@ -1116,14 +1130,41 @@ $("addAdminBtn").onclick=async ()=>{
   if(!name){ $("adminErr").textContent="Please enter the staff name."; return; }
   if(!/^\d{6}$/.test(pin)){ $("adminErr").textContent="PIN must be exactly 6 digits."; return; }
   const btn=$("addAdminBtn"); btn.disabled=true; btn.textContent="Adding…";
+  const email=adminEmail(name); const sec=getSecondary();
+  try{ await sec.auth().setPersistence(firebase.auth.Auth.Persistence.NONE); }catch(_){}
   try{
-    const email=adminEmail(name); const sec=getSecondary();
-    try{ await sec.auth().setPersistence(firebase.auth.Auth.Persistence.NONE); }catch(_){}
     const cred=await sec.auth().createUserWithEmailAndPassword(email,pin); const uid=cred.user.uid;
-    await db.collection("admins").doc(uid).set({ name:name, email:email, slug:adminSlug(name), active:true, createdAt:firebase.firestore.FieldValue.serverTimestamp() });
+    await db.collection("admins").doc(uid).set({ name:name, email:email, slug:adminSlug(name), active:true, removed:false, createdAt:firebase.firestore.FieldValue.serverTimestamp() });
     await sec.auth().signOut();
     $("newAdminName").value=""; $("newAdminPin").value=""; toast("Staff added."); loadAdmins();
-  }catch(e){ console.error(e); const map={"auth/email-already-in-use":"A staff member with that name already exists. Use a different name.","auth/weak-password":"PIN must be at least 6 digits.","auth/invalid-email":"That name can't be used. Try a simpler name."}; $("adminErr").textContent=map[e.code]||"Could not add staff. Please try again."; }
+  }catch(e){
+    if(e.code==="auth/email-already-in-use"){
+      try{
+        const q=await db.collection("admins").where("email","==",email).limit(1).get();
+        if(!q.empty){
+          const d=q.docs[0], data=d.data();
+          if(data.active!==false && data.removed!==true){ $("adminErr").textContent="A staff member with that name already exists. Use a different name."; }
+          else {
+            let pinMatched=false;
+            try{ await sec.auth().signInWithEmailAndPassword(email,pin); pinMatched=true; await sec.auth().signOut(); }catch(_){}
+            await db.collection("admins").doc(d.id).set({ name:name, slug:adminSlug(name), active:true, removed:false },{merge:true});
+            $("newAdminName").value=""; $("newAdminPin").value="";
+            toast(pinMatched?"Staff re-enabled.":"Staff re-enabled — they keep their previous PIN."); loadAdmins();
+          }
+        } else {
+          try{
+            const cred2=await sec.auth().signInWithEmailAndPassword(email,pin); const uid2=cred2.user.uid;
+            await db.collection("admins").doc(uid2).set({ name:name, email:email, slug:adminSlug(name), active:true, removed:false, createdAt:firebase.firestore.FieldValue.serverTimestamp() });
+            await sec.auth().signOut();
+            $("newAdminName").value=""; $("newAdminPin").value=""; toast("Staff added."); loadAdmins();
+          }catch(e2){ $("adminErr").textContent="That name was used before with a different PIN. Use that same PIN, or pick a slightly different name."; }
+        }
+      }catch(e3){ console.error(e3); $("adminErr").textContent="Could not add staff. Please try again."; }
+    } else {
+      const map={"auth/weak-password":"PIN must be at least 6 digits.","auth/invalid-email":"That name can't be used. Try a simpler name."};
+      $("adminErr").textContent=map[e.code]||"Could not add staff. Please try again.";
+    }
+  }
   finally{ btn.disabled=false; btn.textContent="Add staff"; }
 };
 
