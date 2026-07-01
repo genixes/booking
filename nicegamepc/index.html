@@ -97,6 +97,7 @@
   .cell-selected { background:var(--sel-bg); color:var(--sel-tx); cursor:pointer; }
   .cell-booked { background:var(--book-bg); color:var(--book-tx); cursor:not-allowed; }
   .cell-pending { background:var(--pend-bg); color:var(--pend-tx); cursor:not-allowed; }
+  .cell-past { background:#EDF0F1; color:#9BA7AD; cursor:not-allowed; }
 
   .summary { position:sticky; top:18px; }
   .sum-empty { color:var(--muted); font-size:14px; }
@@ -162,6 +163,19 @@
   .upload img.preview { max-width:200px; border-radius:10px; margin-top:6px; }
   .hold-note { background:#EAF1F7; border:1px solid #D5E3EE; color:#2E5C7E; border-radius:10px; padding:12px 14px; font-size:13px; margin-top:16px; }
   .hold-note strong { color:var(--pend-tx); }
+  .timer-bar { position:sticky; top:8px; z-index:20; display:flex; align-items:center; gap:12px; background:var(--navy); color:#fff; border-radius:14px; padding:14px 18px; margin-bottom:16px; box-shadow:0 8px 24px rgba(21,69,95,.22); }
+  .timer-bar .tb-ico { font-size:22px; line-height:1; }
+  .timer-bar .tb-txt { font-size:13px; font-weight:600; opacity:.92; }
+  .timer-bar .tb-txt strong { display:block; font-size:12px; font-weight:700; opacity:.8; letter-spacing:.02em; }
+  .timer-bar .tb-count { margin-left:auto; font-variant-numeric:tabular-nums; font-weight:800; font-size:26px; letter-spacing:.02em; background:rgba(255,255,255,.14); padding:6px 14px; border-radius:10px; min-width:96px; text-align:center; }
+  .timer-bar.urgent { background:#B5342A; box-shadow:0 8px 24px rgba(181,52,42,.35); animation:tbpulse 1s ease-in-out infinite; }
+  @keyframes tbpulse { 0%,100%{ transform:scale(1); } 50%{ transform:scale(1.012); } }
+  .modal-overlay { position:fixed; inset:0; background:rgba(21,69,95,.55); display:none; place-items:center; padding:20px; z-index:80; }
+  .modal-overlay.show { display:grid; }
+  .modal-box { background:#fff; border-radius:18px; padding:28px 24px; max-width:400px; width:100%; text-align:center; box-shadow:var(--shadow); }
+  .modal-box .m-ico { width:64px; height:64px; border-radius:50%; background:#FBE7E5; color:#C2453B; display:grid; place-items:center; font-size:30px; margin:0 auto 16px; }
+  .modal-box h3 { font-size:19px; color:var(--navy); margin-bottom:8px; }
+  .modal-box p { color:var(--muted); font-size:14px; margin-bottom:20px; }
 
   .success { max-width:520px; margin:40px auto; text-align:center; }
   .success .check { width:84px; height:84px; border-radius:50%; background:var(--open-bg); color:var(--green-d); display:grid; place-items:center; font-size:42px; margin:0 auto 18px; }
@@ -176,6 +190,7 @@
   .toast { position:fixed; left:50%; bottom:80px; transform:translateX(-50%); background:var(--navy-d); color:#fff; padding:14px 20px; border-radius:12px; font-weight:600; box-shadow:var(--shadow); opacity:0; pointer-events:none; transition:opacity .2s; max-width:90%; text-align:center; z-index:60; }
   .toast.show { opacity:1; }
   @media (prefers-reduced-motion: reduce){ *{ transition:none !important; } }
+
 
 html, body { max-width: 100%; overflow-x: hidden; }
 .grid-layout > * { min-width: 0; }
@@ -197,7 +212,7 @@ table.slots .time-cell { position: sticky; left: 0; background: var(--card); z-i
   .table-scroll { max-height: calc(100vh - 240px); overflow-y: auto; }
 }
 
-     
+
 
 </style>
 </head>
@@ -234,6 +249,7 @@ table.slots .time-cell { position: sticky; left: 0; background: var(--card); z-i
             <div class="item"><div class="sw" style="background:var(--sel-bg)"></div><div><div class="lab">Selected</div><div class="sub">You selected</div></div></div>
             <div class="item"><div class="sw" style="background:var(--book-bg)"></div><div><div class="lab">Booked</div><div class="sub">Not available</div></div></div>
             <div class="item"><div class="sw" style="background:var(--pend-bg)"></div><div><div class="lab">Pending</div><div class="sub">On hold</div></div></div>
+            <div class="item"><div class="sw" style="background:#EDF0F1"></div><div><div class="lab">Past</div><div class="sub">Unavailable</div></div></div>
           </div>
         </div>
       </div>
@@ -260,11 +276,17 @@ table.slots .time-cell { position: sticky; left: 0; background: var(--card); z-i
   <div id="checkoutView" class="checkout" style="display:none;">
     <button class="btn-ghost" id="backToSlots" style="margin-bottom:16px;">‹ Back to slots</button>
 
+    <div class="timer-bar" id="timerBar">
+      <span class="tb-ico">⏱️</span>
+      <span class="tb-txt"><strong>TIME LEFT TO COMPLETE</strong>Finish your details &amp; payment before the timer ends.</span>
+      <span class="tb-count" id="timerCount">10:00</span>
+    </div>
+
     <div class="card">
       <h3>Booker information</h3>
       <div class="field-gap"><label class="fl">Full name</label><input type="text" id="nameInput" placeholder="Juan Dela Cruz" /></div>
       <div class="field-gap"><label class="fl">Mobile number</label><input type="tel" id="contactInput" placeholder="09XX XXX XXXX" /></div>
-      <div><label class="fl">Email (optional)</label><input type="email" id="emailInput" placeholder="you@email.com" /></div>
+      <div><label class="fl">Email</label><input type="email" id="emailInput" placeholder="you@email.com" inputmode="email" autocomplete="email" /><div class="sum-note" style="margin-top:6px;">We'll send your booking status and confirmation to this email.</div></div>
     </div>
 
     <div class="card">
@@ -307,6 +329,15 @@ table.slots .time-cell { position: sticky; left: 0; background: var(--card); z-i
   <button class="btn mb-btn" id="mbContinue" disabled>Continue</button>
 </div>
 
+<div class="modal-overlay" id="expireOverlay">
+  <div class="modal-box">
+    <div class="m-ico">⏱️</div>
+    <h3>Time's up</h3>
+    <p id="expireMsg">Your 10-minute reservation window has expired, so your selected slots have been released. Please pick your slots again.</p>
+    <button class="btn btn-navy" id="expireBtn" style="width:100%;">Back to booking</button>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -323,6 +354,7 @@ let cart=new Set();                 /* keys: "YYYY-MM-DD|Court|HH:MM" */
 let bookedSet=new Set(), pendingSet=new Set();
 let availUnsub=null;
 let chosenPayment=null, receiptData=null;
+let holdTimer=null, holdDeadline=0;
 
 const $=(id)=>document.getElementById(id);
 function showError(m){ $("loading").style.display="none"; $("app").style.display="none"; $("errorBox").style.display="block"; $("errorBox").textContent=m; }
@@ -436,14 +468,19 @@ function watchAvailability(){
 }
 function renderGrid(){
   const body=$("gridBody"); body.innerHTML="";
+  const isToday=(selectedDate===dstr(today()));
+  const nowM=new Date().getHours()*60+new Date().getMinutes();
+  const step=Number(SETTINGS.slotMinutes??60);
   buildSlots().forEach(slot=>{
     const tr=document.createElement("tr");
     const tc=document.createElement("td"); tc.className="time-cell"; tc.textContent=slot.label; tr.appendChild(tc);
+    const isPast=isToday && (slot.mins+step)<=nowM;
     COURTS.forEach(c=>{
       const td=document.createElement("td"); td.className="cell";
       const availKey=c.name+"|"+slot.key, cartKey=ck(selectedDate,c.name,slot.key);
       const inner=document.createElement("div"); inner.className="cell-inner";
-      if(bookedSet.has(availKey)){ inner.className+=" cell-booked"; inner.textContent="Booked"; }
+      if(isPast){ if(cart.has(cartKey)) cart.delete(cartKey); inner.className+=" cell-past"; inner.textContent="Past"; }
+      else if(bookedSet.has(availKey)){ inner.className+=" cell-booked"; inner.textContent="Booked"; }
       else if(pendingSet.has(availKey)){ inner.className+=" cell-pending"; inner.textContent="Pending"; }
       else if(cart.has(cartKey)){ inner.className+=" cell-selected"; inner.textContent="Selected"; inner.onclick=()=>{ cart.delete(cartKey); afterCartChange(); }; }
       else { inner.className+=" cell-open"; inner.textContent="Open"; inner.onclick=()=>{ cart.add(cartKey); afterCartChange(); }; }
@@ -481,14 +518,44 @@ function updateSummary(){
   $("mbSlots").textContent=cart.size; $("mbTotal").textContent=peso(total); $("mbContinue").disabled=cart.size===0;
 }
 
+function holdMins(){ const m=Number(SETTINGS&&SETTINGS.holdMinutes); return (m&&m>0)?m:10; }
+function startHoldTimer(){
+  clearHoldTimer();
+  holdDeadline=Date.now()+holdMins()*60000;
+  const bar=$("timerBar"); if(bar){ bar.style.display="flex"; bar.classList.remove("urgent"); }
+  updateTimer();
+  holdTimer=setInterval(updateTimer,1000);
+}
+function clearHoldTimer(){ if(holdTimer){ clearInterval(holdTimer); holdTimer=null; } }
+function updateTimer(){
+  const rem=Math.max(0,Math.round((holdDeadline-Date.now())/1000));
+  const el=$("timerCount"); if(el) el.textContent=pad2(Math.floor(rem/60))+":"+pad2(rem%60);
+  const bar=$("timerBar"); if(bar){ if(rem<=60) bar.classList.add("urgent"); else bar.classList.remove("urgent"); }
+  if(rem<=0) expireHold();
+}
+function expireHold(){
+  clearHoldTimer();
+  cart.clear(); chosenPayment=null; receiptData=null;
+  const p=$("expireMsg"); if(p) p.textContent="Your "+holdMins()+"-minute reservation window has expired, so your selected slots have been released. Please pick your slots again.";
+  $("expireOverlay").classList.add("show");
+}
+$("expireBtn").onclick=()=>{
+  $("expireOverlay").classList.remove("show");
+  $("checkoutView").style.display="none"; $("successView").style.display="none"; $("app").style.display="block";
+  if(window.innerWidth<=1000) $("mobileBar").style.display="flex";
+  $("nameInput").value=""; $("contactInput").value=""; $("emailInput").value="";
+  $("receiptPreview").style.display="none"; const big=$("uploadBox").querySelector(".big"); if(big) big.textContent="☁️ Tap to upload image";
+  renderGrid(); updateSummary(); renderCalendar(); window.scrollTo({top:0,behavior:"smooth"});
+};
+
 function goCheckout(){
   if(cart.size===0) return;
   $("app").style.display="none"; $("checkoutView").style.display="block"; $("mobileBar").style.display="none";
-  renderPayMethods(); window.scrollTo({top:0,behavior:"smooth"});
+  renderPayMethods(); startHoldTimer(); window.scrollTo({top:0,behavior:"smooth"});
 }
 $("continueBtn").onclick=goCheckout;
 $("mbContinue").onclick=goCheckout;
-$("backToSlots").onclick=()=>{ $("checkoutView").style.display="none"; $("app").style.display="block"; if(window.innerWidth<=1000) $("mobileBar").style.display="flex"; };
+$("backToSlots").onclick=()=>{ clearHoldTimer(); $("checkoutView").style.display="none"; $("app").style.display="block"; if(window.innerWidth<=1000) $("mobileBar").style.display="flex"; };
 
 function paymentOptions(){
   const all=[
@@ -550,6 +617,8 @@ $("submitBtn").onclick=async ()=>{
   const name=$("nameInput").value.trim(), contact=$("contactInput").value.trim(), email=$("emailInput").value.trim();
   if(!name){ toast("Please enter your name."); return; }
   if(!contact){ toast("Please enter your mobile number."); return; }
+  if(!email){ toast("Please enter your email address."); return; }
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){ toast("Please enter a valid email address."); return; }
   if(paymentOptions().length && !chosenPayment){ toast("Please select a payment method."); return; }
   const btn=$("submitBtn"); btn.disabled=true; btn.textContent="Submitting…";
   try{
@@ -584,6 +653,7 @@ $("submitBtn").onclick=async ()=>{
     if(receiptData){ try{ await db.collection("receipts").doc(bookingId).set({ bookingId:bookingId, image:receiptData, createdAt:firebase.firestore.FieldValue.serverTimestamp() }); }catch(e){ console.warn("receipt save failed",e); } }
 
     $("checkoutView").style.display="none"; $("successView").style.display="block";
+    clearHoldTimer();
     $("successId").textContent=bookingId;
     $("viewStatusBtn").onclick=()=>{ window.location.href="status.html?id="+encodeURIComponent(bookingId); };
     window.scrollTo({top:0,behavior:"smooth"});
@@ -591,6 +661,7 @@ $("submitBtn").onclick=async ()=>{
 };
 
 $("anotherBtn").onclick=()=>{
+  clearHoldTimer();
   cart.clear(); chosenPayment=null; receiptData=null;
   $("nameInput").value=""; $("contactInput").value=""; $("emailInput").value="";
   $("receiptPreview").style.display="none"; $("uploadBox").querySelector(".big").textContent="☁️ Tap to upload image";
@@ -599,6 +670,7 @@ $("anotherBtn").onclick=()=>{
   renderGrid(); updateSummary(); renderCalendar(); window.scrollTo({top:0,behavior:"smooth"});
 };
 
+setInterval(()=>{ if(SETTINGS && COURTS.length && selectedDate===dstr(today()) && $("app").style.display!=="none") renderGrid(); }, 60000);
 loadData();
 </script>
 </body>
