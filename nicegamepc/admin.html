@@ -59,8 +59,10 @@
 
   .topbar { background:var(--navy); color:#fff; padding:14px 18px; display:flex; align-items:center; gap:12px; }
   .topbar img { width:38px; height:38px; border-radius:9px; object-fit:cover; }
-  .topbar h1 { font-size:16px; font-weight:800; line-height:1.15; }
+  .topbar h1 { font-size:16px; font-weight:800; line-height:1.15; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
   .topbar .eyebrow { font-size:10px; letter-spacing:.14em; text-transform:uppercase; opacity:.7; font-weight:700; }
+  .topbar > div { min-width:0; }
+  .topbar img, .bell, .signout { flex-shrink:0; }
   .topbar .spacer { margin-left:auto; }
   .bell { position:relative; background:rgba(255,255,255,.14); border:none; color:#fff; width:42px; height:42px; border-radius:10px; cursor:pointer; font-size:18px; display:grid; place-items:center; }
   .bell:hover { background:rgba(255,255,255,.24); }
@@ -91,13 +93,14 @@
 
   .stats { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin:16px 0; }
   .book-2col { display:grid; grid-template-columns:320px 1fr; gap:16px; align-items:start; }
+  .book-2col, .book-left, .book-right { min-width:0; }
   .book-2col .stats { margin:0 0 14px; }
   .book-left .card { position:sticky; top:16px; }
   @media (max-width:900px){ .book-2col { grid-template-columns:1fr; } .book-left .card { position:static; } .book-2col .stats { margin:14px 0; } }
   .stat { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:14px 16px; box-shadow:var(--shadow); }
   .stat .n { font-size:24px; font-weight:800; color:var(--navy); }
   .stat .l { font-size:12px; color:var(--muted); font-weight:600; }
-  @media (max-width:560px){ .stats{ grid-template-columns:1fr 1fr; } .stat:last-child{ grid-column:1/-1; } }
+  @media (max-width:560px){ .stats{ grid-template-columns:1fr 1fr; } .stat:last-child{ grid-column:1/-1; } .cal-head{ flex-direction:column; align-items:stretch; } .btn-walk{ width:100%; } }
 
   .view-head { display:flex; align-items:center; gap:12px; margin-bottom:14px; flex-wrap:wrap; }
   .view-head h3 { margin:0; }
@@ -138,6 +141,31 @@
   table.sched td.book-cell.confirmed .stt { color:var(--conf-tx); }
   table.sched td.book-cell.pending .stt { color:var(--pend-tx); }
   .scell-open { background:var(--open-bg); color:var(--open-tx); border-radius:9px; padding:12px 4px; text-align:center; font-size:13px; font-weight:700; }
+  .cal-head { display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:12px; flex-wrap:wrap; }
+  .cal-head h3 { margin:0; }
+  .btn-walk { background:var(--green); color:#fff; border:none; border-radius:10px; padding:9px 14px; font:inherit; font-weight:700; font-size:13px; cursor:pointer; white-space:nowrap; }
+  .btn-walk:hover { background:var(--green-d); }
+  .badge.cash { background:var(--ok-bg); color:var(--ok-tx); }
+  .walk-modal { max-width:600px; }
+  .walk-modal .wsub { font-size:13px; color:var(--muted); margin:4px 0 16px; }
+  .wstep { font-size:12px; font-weight:800; letter-spacing:.04em; text-transform:uppercase; color:var(--navy); margin:18px 0 10px; padding-bottom:6px; border-bottom:1px solid var(--line); }
+  .fld { margin-bottom:12px; }
+  .fld label { display:block; font-size:13px; font-weight:600; margin-bottom:6px; }
+  .fld label .opt { color:var(--muted); font-weight:500; }
+  .fld input { width:100%; padding:11px 12px; border:1px solid var(--line); border-radius:10px; font:inherit; background:#fff; }
+  .fld input:focus { outline:2px solid var(--green); border-color:var(--green); }
+  #walkGrid td.book-cell { cursor:pointer; }
+  .wcell { border-radius:9px; padding:12px 4px; text-align:center; font-size:12px; font-weight:700; }
+  .wcell.open { background:var(--open-bg); color:var(--open-tx); cursor:pointer; }
+  .wcell.sel { background:var(--navy); color:#fff; }
+  .wcell.off { background:#EDF0F1; color:#9BA7AD; cursor:not-allowed; }
+  .pos { background:var(--bg); border:1px solid var(--line); border-radius:12px; padding:16px; }
+  .pos-row { display:flex; align-items:center; justify-content:space-between; font-size:15px; }
+  .pos-row strong { font-size:18px; color:var(--navy); }
+  .pos-row.change { margin-top:12px; padding-top:12px; border-top:1px dashed var(--line); }
+  .pos-row.change strong { font-size:22px; color:var(--green-d); }
+  .pos-row.change.neg strong { color:var(--cancel); }
+  .walk-err { color:var(--cancel); font-size:13px; font-weight:600; margin-top:12px; min-height:16px; }
 
   .empty { text-align:center; padding:40px 16px; color:var(--muted); }
   .loading { text-align:center; padding:50px 16px; color:var(--muted); }
@@ -200,7 +228,7 @@
     <div class="book-2col">
       <div class="book-left">
         <div class="card">
-          <h3>Select a date</h3>
+          <div class="cal-head"><h3>Select a date</h3><button class="btn-walk" id="addWalkBtn">+ Walk-in Booking</button></div>
           <div class="cal-nav">
             <button class="btn-ghost" id="prevMonth">‹</button>
             <button class="btn-ghost today" id="todayBtn">Today</button>
@@ -245,6 +273,35 @@
 <div class="overlay" id="detailOverlay"><div class="modal" id="detailModal"></div></div>
 <div class="overlay" id="receiptOverlay"><div class="modal" style="max-width:480px;"><h3 style="margin-bottom:14px;">Payment receipt</h3><img id="receiptImg" alt="receipt" /><button class="btn-ghost" id="receiptClose" style="width:100%;margin-top:16px;padding:13px;">Close</button></div></div>
 
+<div class="overlay" id="walkOverlay"><div class="modal walk-modal">
+  <h3>Walk-in Booking <span class="badge cash">Cash</span></h3>
+  <p class="wsub">Booking for <strong id="walkDate">—</strong>. To book another day, close this and pick the date on the calendar first.</p>
+
+  <div class="wstep">1 · Select court &amp; time</div>
+  <div class="table-scroll"><table class="sched" id="walkGrid"><thead><tr id="walkHead"></tr></thead><tbody id="walkBody"></tbody></table></div>
+
+  <div class="wstep">2 · Player details</div>
+  <div class="fld"><label>Player name</label><input id="walkName" placeholder="Juan Dela Cruz" /></div>
+  <div class="fld"><label>Mobile number</label><input id="walkContact" inputmode="tel" placeholder="09xx xxx xxxx" /></div>
+  <div class="fld"><label>Email <span class="opt">(optional)</span></label><input id="walkEmail" inputmode="email" placeholder="you@email.com" /></div>
+
+  <div class="wstep">3 · Handled by</div>
+  <div class="fld"><label>Staff name</label><input id="walkStaff" placeholder="Your name" /></div>
+
+  <div class="wstep">4 · Cash payment</div>
+  <div class="pos">
+    <div class="pos-row"><span>Total due</span><strong id="walkTotal">₱0</strong></div>
+    <div class="fld" style="margin:10px 0 0;"><label>Cash tendered</label><input id="walkTendered" type="number" min="0" inputmode="numeric" placeholder="0" /></div>
+    <div class="pos-row change"><span>Change (sukli)</span><strong id="walkChange">₱0</strong></div>
+  </div>
+
+  <div class="walk-err" id="walkErr"></div>
+  <div class="modal-actions">
+    <button class="btn-ghost" id="walkCancel">Cancel</button>
+    <button class="act act-confirm" id="walkConfirm">Confirm &amp; Save</button>
+  </div>
+</div></div>
+
 <div id="boot" class="loading">Loading…</div>
 <div class="toast" id="toast"></div>
 
@@ -256,7 +313,7 @@
 let db, auth, SETTINGS=null, COURTS=[];
 let dayUnsub=null, pendingUnsub=null;
 let viewYear, viewMonth, selectedDate=null, currentView="list";
-let DAY=[], PENDING=[];
+let DAY=[], PENDING=[]; let ADMIN_NAME="", walkCart=new Set();
 
 try { const app=firebase.initializeApp(firebaseConfig,"layawAdmin"); db=app.firestore(); auth=app.auth(); auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(()=>{}); }
 catch(e){ document.getElementById("boot").textContent="Config error. Check the Firebase config at the top of this file."; }
@@ -269,6 +326,21 @@ function parseDstr(s){ const [y,m,d]=s.split("-").map(Number); return new Date(y
 function hm2min(s){ const [h,m]=String(s).split(":").map(Number); return (h||0)*60+(m||0); }
 function hourLabel(mins){ let h=Math.floor(mins/60),m=mins%60; const ap=h>=12&&h<24?"PM":"AM"; let h12=h%12; if(h12===0)h12=12; return m===0?(h12+ap):(h12+":"+pad2(m)+ap); }
 function slotsLabel(slots){ const step=Number(SETTINGS&&SETTINGS.slotMinutes||60); return (slots||[]).slice().sort().map(s=>{const m=hm2min(s); return hourLabel(m)+"-"+hourLabel(m+step);}).join(", "); }
+function slotsRange(slots){
+  const step=Number(SETTINGS&&SETTINGS.slotMinutes||60);
+  const arr=(slots||[]).map(hm2min).sort((a,b)=>a-b);
+  if(!arr.length) return "—";
+  const fmt=(min)=>{ let h=Math.floor(min/60),m=min%60; const ap=h>=12&&h<24?"PM":"AM"; let h12=h%12; if(h12===0)h12=12; return h12+":"+pad2(m)+ap; };
+  const parts=[]; let start=arr[0], prev=arr[0];
+  for(let i=1;i<=arr.length;i++){
+    if(i<arr.length && arr[i]===prev+step){ prev=arr[i]; continue; }
+    const end=prev+step, hrs=(end-start)/60;
+    const hlabel=(Number.isInteger(hrs)?hrs:hrs.toFixed(1))+(hrs===1?" hour":" hours");
+    parts.push(fmt(start)+"-"+fmt(end)+" ("+hlabel+")");
+    if(i<arr.length){ start=arr[i]; prev=arr[i]; }
+  }
+  return parts.join(", ");
+}
 function peso(n){ return "₱"+Number(n||0).toLocaleString("en-PH"); }
 function niceDate(s){ return parseDstr(s).toLocaleDateString("en-US",{weekday:"short",month:"short",day:"numeric"}); }
 function toast(m){ const t=$("toast"); t.textContent=m; t.classList.add("show"); setTimeout(()=>t.classList.remove("show"),2600); }
@@ -321,7 +393,7 @@ auth && auth.onAuthStateChanged(async user=>{
       const a=await db.collection("admins").doc(user.uid).get();
       if(!a.exists){ msg="This is the owner account. Staff sign in with their name and 6-digit PIN."; }
       else if(a.data().removed===true || a.data().active===false){ msg="This staff account has been removed or disabled. Contact the owner."; }
-      else { ok=true; }
+      else { ok=true; ADMIN_NAME=a.data().name||""; }
     }catch(e){ msg="Could not verify your access. Please try again."; }
     if(!ok){ $("dashView").style.display="none"; $("loginView").style.display="grid"; $("loginErr").textContent=msg; return; }
     $("loginView").style.display="none"; $("dashView").style.display="block"; startDashboard();
@@ -413,8 +485,8 @@ function renderList(){
     const slotSets=grp.map(b=>(b.slots||[]).slice().sort().join(","));
     const allSame=slotSets.every(s=>s===slotSets[0]);
     let timesHtml = allSame
-      ? '<div class="times">'+slotsLabel(first.slots)+'</div>'
-      : grp.map(b=>'<div class="times"><strong>'+b.court+'</strong> · '+slotsLabel(b.slots)+'</div>').join("");
+      ? '<div class="times">'+slotsRange(first.slots)+'</div>'
+      : grp.slice().sort((a,b)=>String(a.court).localeCompare(String(b.court))).map(b=>'<div class="times"><strong>'+b.court+':</strong> '+slotsRange(b.slots)+'</div>').join("");
     let acts=""; if(st==="pending") acts='<button class="act act-confirm" data-key="'+key+'" data-act="confirm">Confirm</button><button class="act act-cancel" data-key="'+key+'" data-act="cancel">Cancel</button>'; else if(st==="confirmed") acts='<button class="act act-cancel" data-key="'+key+'" data-act="cancel">Cancel booking</button>';
     const card=document.createElement("div"); card.className="booking"; const em=emailOf(first);
     card.innerHTML='<div class="row1"><span class="court">'+courts.join(", ")+'</span><span class="badge '+st+'">'+st+'</span><span class="amt">'+peso(total)+'</span></div>'+timesHtml+'<div class="who"><strong>'+nameOf(first)+'</strong> · '+contactOf(first)+(em?(' · '+em):'')+'</div>'+(acts?('<div class="actions">'+acts+'</div>'):'');
@@ -472,7 +544,7 @@ function openDetail(b){
   const first=list[0]; const key=first.bookingId||first.id; const rid=first.bookingId||first.id;
   const slotSets=list.map(x=>(x.slots||[]).slice().sort().join(","));
   const allSame=slotSets.every(s=>s===slotSets[0]);
-  const timesHtml = allSame ? '<div class="mrow"><span>Time:</span> '+slotsLabel(first.slots)+'</div>' : list.map(x=>'<div class="mrow"><span>'+x.court+':</span> '+slotsLabel(x.slots)+'</div>').join("");
+  const timesHtml = allSame ? '<div class="mrow"><span>Time:</span> '+slotsRange(first.slots)+'</div>' : list.slice().sort((a,b)=>String(a.court).localeCompare(String(b.court))).map(x=>'<div class="mrow"><span>'+x.court+':</span> '+slotsRange(x.slots)+'</div>').join("");
   let acts=""; if(st==="pending") acts='<button class="act act-confirm" data-key="'+key+'" data-act="confirm">Confirm</button><button class="act act-cancel" data-key="'+key+'" data-act="cancel">Cancel</button>'; else if(st==="confirmed") acts='<button class="act act-cancel" data-key="'+key+'" data-act="cancel">Cancel booking</button>';
   $("detailModal").innerHTML='<h3>'+courts+' · <span class="badge '+st+'">'+st+'</span></h3>'+
     '<div class="mrow"><span>Date:</span> '+niceDate(first.date)+'</div>'+ timesHtml +
@@ -510,7 +582,7 @@ function renderNotif(){
     const courts=[...new Set(grp.map(b=>b.court))].sort().join(", ");
     const total=grp.reduce((s,b)=>s+Number(b.amount||0),0);
     const it=document.createElement("div"); it.className="nitem";
-    it.innerHTML='<div class="nt">'+courts+' · '+niceDate(first.date)+'</div><div class="nd">'+slotsLabel(first.slots)+' · '+nameOf(first)+' · '+peso(total)+'</div><div class="nacts"><button class="act-confirm" data-key="'+key+'" data-act="confirm">Confirm</button><button class="act-cancel" data-key="'+key+'" data-act="cancel">Cancel</button></div>';
+    it.innerHTML='<div class="nt">'+courts+' · '+niceDate(first.date)+'</div><div class="nd">'+slotsRange(first.slots)+' · '+nameOf(first)+' · '+peso(total)+'</div><div class="nacts"><button class="act-confirm" data-key="'+key+'" data-act="confirm">Confirm</button><button class="act-cancel" data-key="'+key+'" data-act="cancel">Cancel</button></div>';
     body.appendChild(it);
   });
   body.querySelectorAll("button").forEach(btn=>btn.onclick=()=>doAction(btn.getAttribute("data-key"),btn.getAttribute("data-act")));
@@ -531,6 +603,88 @@ async function doAction(key,act){
     await batch.commit();
     toast(act==="confirm"?"Booking confirmed.":"Booking cancelled.");
   }catch(e){ console.error(e); toast("Could not update. Please try again."); }
+}
+
+/* ---------- Walk-in booking (Cash POS) ---------- */
+function walkSlotCost(){ return Number(SETTINGS.ratePerHour??0)*(Number(SETTINGS.slotMinutes??60)/60); }
+$("addWalkBtn").onclick=openWalkIn;
+function openWalkIn(){
+  if(!SETTINGS || !COURTS.length){ toast("Please wait — still loading courts."); return; }
+  walkCart.clear();
+  $("walkDate").textContent=niceDate(selectedDate);
+  $("walkName").value=""; $("walkContact").value=""; $("walkEmail").value=""; $("walkStaff").value=ADMIN_NAME||"";
+  $("walkTendered").value=""; $("walkErr").textContent="";
+  renderWalkGrid(); updateWalkTotals();
+  $("walkOverlay").classList.add("show");
+}
+$("walkCancel").onclick=()=>$("walkOverlay").classList.remove("show");
+$("walkOverlay").onclick=(e)=>{ if(e.target===$("walkOverlay")) $("walkOverlay").classList.remove("show"); };
+function renderWalkGrid(){
+  $("walkHead").innerHTML="<th>Time</th>"+COURTS.map(c=>"<th>"+c.name+"</th>").join("");
+  const body=$("walkBody"); body.innerHTML="";
+  const taken=new Set(); DAY.forEach(b=>{ if(b.status==="cancelled")return; (b.slots||[]).forEach(s=>taken.add(b.court+"|"+s)); });
+  const isToday=(selectedDate===dstr(today())); const nowM=new Date().getHours()*60+new Date().getMinutes(); const step=Number(SETTINGS.slotMinutes??60);
+  buildSlots().forEach(slot=>{
+    const tr=document.createElement("tr");
+    const tc=document.createElement("td"); tc.className="time-cell"; tc.textContent=hourLabel(slot.mins)+"-"+hourLabel(slot.mins+step); tr.appendChild(tc);
+    const past=isToday && (slot.mins+step)<=nowM;
+    COURTS.forEach(c=>{
+      const td=document.createElement("td"); td.className="cell book-cell"; const key=c.name+"|"+slot.key; const cell=document.createElement("div");
+      if(past || taken.has(key)){ cell.className="wcell off"; cell.textContent=past?"Past":"Taken"; }
+      else if(walkCart.has(key)){ cell.className="wcell sel"; cell.textContent="Selected"; cell.onclick=()=>{ walkCart.delete(key); renderWalkGrid(); updateWalkTotals(); }; }
+      else { cell.className="wcell open"; cell.textContent="Open"; cell.onclick=()=>{ walkCart.add(key); renderWalkGrid(); updateWalkTotals(); }; }
+      td.appendChild(cell); tr.appendChild(td);
+    });
+    body.appendChild(tr);
+  });
+}
+function updateWalkTotals(){
+  const total=walkCart.size*walkSlotCost();
+  $("walkTotal").textContent=peso(total);
+  const tendered=Number($("walkTendered").value||0), change=tendered-total, row=$("walkChange").parentElement;
+  if(tendered>0 && change<0){ row.classList.add("neg"); $("walkChange").textContent="−"+peso(Math.abs(change)); }
+  else { row.classList.remove("neg"); $("walkChange").textContent=peso(change>0?change:0); }
+}
+$("walkTendered").addEventListener("input",updateWalkTotals);
+$("walkConfirm").onclick=async ()=>{
+  $("walkErr").textContent="";
+  const name=$("walkName").value.trim(), contact=$("walkContact").value.trim(), email=$("walkEmail").value.trim(), staff=$("walkStaff").value.trim();
+  const total=walkCart.size*walkSlotCost(), tendered=Number($("walkTendered").value||0);
+  if(walkCart.size===0){ $("walkErr").textContent="Please select at least one slot."; return; }
+  if(!name){ $("walkErr").textContent="Please enter the player's name."; return; }
+  if(!contact){ $("walkErr").textContent="Please enter the player's mobile number."; return; }
+  if(!staff){ $("walkErr").textContent="Please enter the staff name (handled by)."; return; }
+  if(email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){ $("walkErr").textContent="That email looks invalid."; return; }
+  if(tendered<total){ $("walkErr").textContent="Cash tendered is less than the total due."; return; }
+  const btn=$("walkConfirm"); btn.disabled=true; btn.textContent="Saving…";
+  try{
+    const date=selectedDate;
+    const byCourt={}; [...walkCart].forEach(k=>{ const i=k.indexOf("|"); const court=k.slice(0,i), hhmm=k.slice(i+1); (byCourt[court]=byCourt[court]||[]).push(hhmm); });
+    const snap=await db.collection("bookings").where("date","==",date).get();
+    const taken=new Set(); snap.forEach(d=>{ const b=d.data(); if(b.status==="cancelled")return; (b.slots||[]).forEach(s=>taken.add(b.court+"|"+s)); });
+    for(const court of Object.keys(byCourt)){ for(const s of byCourt[court]){ if(taken.has(court+"|"+s)){ $("walkErr").textContent=court+" "+hourLabel(hm2min(s))+" was just taken. Please adjust the selection."; btn.disabled=false; btn.textContent="Confirm & Save"; renderWalkGrid(); updateWalkTotals(); return; } } }
+    const bookingId=await nextBookingId();
+    const refs=[]; const batch=db.batch();
+    Object.keys(byCourt).forEach(court=>{
+      const slots=byCourt[court].sort(); const amount=slots.length*walkSlotCost();
+      const ref=db.collection("bookings").doc(); refs.push(ref);
+      batch.set(ref,{ bookingId:bookingId, date:date, court:court, slots:slots, startTime:slots[0], endTime:slots[slots.length-1], amount:amount, paymentMethod:"Cash", status:"pending", source:"walk-in", handledBy:staff, createdAt:firebase.firestore.FieldValue.serverTimestamp() });
+    });
+    batch.set(db.collection("bookingContacts").doc(bookingId),{ bookingId:bookingId, bookerName:name, contact:contact, email:email, handledBy:staff, cashTendered:tendered, changeGiven:tendered-total, createdAt:firebase.firestore.FieldValue.serverTimestamp() });
+    await batch.commit();
+    const b2=db.batch(); refs.forEach(r=>b2.update(r,{status:"confirmed"})); await b2.commit();
+    $("walkOverlay").classList.remove("show");
+    toast("Walk-in confirmed · "+peso(total)+" cash · change "+peso(tendered-total));
+  }catch(e){ console.error(e); $("walkErr").textContent="Could not save the booking. Please try again."; }
+  finally{ btn.disabled=false; btn.textContent="Confirm & Save"; }
+};
+async function nextBookingId(){
+  let prefix=SETTINGS.idPrefix;
+  if(!prefix){ prefix=(SETTINGS.businessName||"BK").split(/\s+/).map(w=>w[0]).join("").replace(/[^A-Za-z]/g,"").toUpperCase().slice(0,4)||"BK"; }
+  const ref=db.collection("meta").doc("counters");
+  const seq=await db.runTransaction(async tx=>{ const doc=await tx.get(ref); let n=(doc.exists&&doc.data().bookingSeq)?doc.data().bookingSeq:0; n++; tx.set(ref,{bookingSeq:n},{merge:true}); return n; });
+  const d=new Date(); const mmddyy=pad2(d.getMonth()+1)+pad2(d.getDate())+String(d.getFullYear()).slice(-2);
+  return prefix+"-"+mmddyy+"-"+String(seq).padStart(4,"0");
 }
 
 loadBase();
