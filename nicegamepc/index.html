@@ -311,7 +311,7 @@ table.slots .time-cell { position: sticky; left: 0; background: var(--card); z-i
 
     <div class="card">
       <h3>Upload receipt</h3>
-      <p class="sum-note" style="margin:-6px 0 14px;">Upload your payment proof.</p>
+      <p class="sum-note" style="margin:-6px 0 14px;">Upload your payment proof. <strong style="color:var(--cancel);">Required.</strong></p>
       <div class="upload" id="uploadBox">
         <div class="big">☁️ Tap to upload image</div>
         <div class="small">JPG or PNG, max 5MB</div>
@@ -674,6 +674,7 @@ $("submitBtn").onclick=async ()=>{
   if(!email){ toast("Please enter your email address."); return; }
   if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){ toast("Please enter a valid email address."); return; }
   if(paymentOptions().length && !chosenPayment){ toast("Please select a payment method."); return; }
+  if(paymentOptions().length && !receiptData){ toast("Please upload your payment receipt."); return; }
   const btn=$("submitBtn"); btn.disabled=true; btn.textContent="Submitting…";
   try{
     // group cart by date -> court -> slots
