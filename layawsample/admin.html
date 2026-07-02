@@ -16,7 +16,6 @@
     storageBucket: "layaw-prickleball-sample.firebasestorage.app",
     messagingSenderId: "787503894985",
     appId: "1:787503894985:web:392072c93eafb92a409818"
-
   };
 </script>
 
@@ -194,6 +193,13 @@
   .modal-actions { display:flex; gap:10px; margin-top:14px; }
   .modal-actions .btn-ghost { flex:1; padding:13px; }
   .modal-actions .act { flex:1; }
+  .mini-btn { border:1px solid var(--line); background:#fff; border-radius:8px; padding:8px 14px; font:inherit; font-weight:700; font-size:13px; cursor:pointer; color:var(--navy); }
+  .mini-btn:hover { border-color:var(--green); }
+  .note-box { margin-top:14px; padding-top:14px; border-top:1px solid var(--line); }
+  .note-label { display:block; font-size:12px; font-weight:800; text-transform:uppercase; letter-spacing:.04em; color:var(--navy); margin-bottom:6px; }
+  .note-input { width:100%; min-height:64px; padding:10px 12px; border:1px solid var(--line); border-radius:10px; font:inherit; resize:vertical; background:#fff; margin-bottom:8px; }
+  .note-input:focus { outline:2px solid var(--green); border-color:var(--green); }
+  .note-msg { font-size:12px; font-weight:700; color:var(--ok-tx); margin-left:10px; }
   #receiptImg { width:100%; border-radius:10px; }
 
   .toast { position:fixed; left:50%; bottom:24px; transform:translateX(-50%); background:var(--navy-d); color:#fff; padding:14px 20px; border-radius:12px; font-weight:600; box-shadow:var(--shadow); opacity:0; pointer-events:none; transition:opacity .2s; z-index:60; }
@@ -293,7 +299,7 @@
   <div class="pos">
     <div class="pos-row"><span>Total due</span><strong id="walkTotal">₱0</strong></div>
     <div class="fld" style="margin:10px 0 0;"><label>Cash tendered</label><input id="walkTendered" type="number" min="0" inputmode="numeric" placeholder="0" /></div>
-    <div class="pos-row change"><span>Change</span><strong id="walkChange">₱0</strong></div>
+    <div class="pos-row change"><span>Change (sukli)</span><strong id="walkChange">₱0</strong></div>
   </div>
 
   <div class="walk-err" id="walkErr"></div>
@@ -547,18 +553,23 @@ function openDetail(b){
   const allSame=slotSets.every(s=>s===slotSets[0]);
   const timesHtml = allSame ? '<div class="mrow"><span>Time:</span> '+slotsRange(first.slots)+'</div>' : list.slice().sort((a,b)=>String(a.court).localeCompare(String(b.court))).map(x=>'<div class="mrow"><span>'+x.court+':</span> '+slotsRange(x.slots)+'</div>').join("");
   let acts=""; if(st==="pending") acts='<button class="act act-confirm" data-key="'+key+'" data-act="confirm">Confirm</button><button class="act act-cancel" data-key="'+key+'" data-act="cancel">Cancel</button>'; else if(st==="confirmed") acts='<button class="act act-cancel" data-key="'+key+'" data-act="cancel">Cancel booking</button>';
+  const existingNote=(first.bookingId && CONTACTS[first.bookingId] && CONTACTS[first.bookingId].note) ? CONTACTS[first.bookingId].note : "";
+  const handledBy=(first.handledBy)||(first.bookingId&&CONTACTS[first.bookingId]&&CONTACTS[first.bookingId].handledBy)||"";
   $("detailModal").innerHTML='<h3>'+courts+' · <span class="badge '+st+'">'+st+'</span></h3>'+
     '<div class="mrow"><span>Date:</span> '+niceDate(first.date)+'</div>'+ timesHtml +
     '<div class="mrow"><span>Booker:</span> <strong>'+nameOf(first)+'</strong></div>'+
     '<div class="mrow"><span>Contact:</span> '+contactOf(first)+'</div>'+
     (emailOf(first)?'<div class="mrow"><span>Email:</span> '+emailOf(first)+'</div>':'')+
     (first.paymentMethod?'<div class="mrow"><span>Payment:</span> '+first.paymentMethod+'</div>':'')+
+    (handledBy?'<div class="mrow"><span>Handled by:</span> '+handledBy+'</div>':'')+
     '<div class="mrow"><span>Total:</span> <strong>'+peso(total)+'</strong></div>'+
+    '<div class="note-box"><label class="note-label">Note</label><textarea id="noteInput" class="note-input" placeholder="Add a private note about this booking…">'+existingNote+'</textarea><button class="mini-btn" id="saveNoteBtn" data-id="'+(first.bookingId||"")+'">Save note</button><span class="note-msg" id="noteMsg"></span></div>'+
     '<div class="modal-actions"><button class="btn-ghost" id="detailClose">Close</button><button class="btn-ghost" id="viewReceiptBtn">View receipt</button></div>'+
     (acts?'<div class="modal-actions">'+acts+'</div>':'');
   $("detailOverlay").classList.add("show");
   $("detailClose").onclick=()=>$("detailOverlay").classList.remove("show");
   $("viewReceiptBtn").onclick=()=>viewReceipt(rid);
+  const snb=$("saveNoteBtn"); if(snb) snb.onclick=async ()=>{ const id=snb.getAttribute("data-id"); if(!id){ $("noteMsg").textContent="No booking id."; return; } snb.disabled=true; try{ await db.collection("bookingContacts").doc(id).set({note:$("noteInput").value.trim()},{merge:true}); if(!CONTACTS[id])CONTACTS[id]={}; CONTACTS[id].note=$("noteInput").value.trim(); $("noteMsg").textContent="Saved ✓"; setTimeout(()=>{const m=$("noteMsg");if(m)m.textContent="";},2500); }catch(e){ console.error(e); $("noteMsg").textContent="Could not save."; } finally{ snb.disabled=false; } };
   $("detailModal").querySelectorAll(".act").forEach(btn=>btn.onclick=async ()=>{ await doAction(btn.getAttribute("data-key"),btn.getAttribute("data-act")); $("detailOverlay").classList.remove("show"); });
 }
 $("detailOverlay").onclick=(e)=>{ if(e.target===$("detailOverlay")) $("detailOverlay").classList.remove("show"); };
