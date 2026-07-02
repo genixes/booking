@@ -1395,9 +1395,10 @@ async function renderPayments(){
     payKpi("This month",peso(thisM),"bk")+
     payKpi("Pending amount",peso(pendAmt),"pend",pend.length+" order"+(pend.length===1?"":"s"))+
     payKpi("Transactions",String(conf.length),"occ");
-  const m={}; conf.forEach(b=>{ const k=b.paymentMethod||"Other"; m[k]=(m[k]||0)+Number(b.amount||0); });
+  const m={}; ((SETTINGS.paymentMethods||[]).concat(["Cash"])).forEach(k=>{ if(k && !(k in m)) m[k]=0; });
+  conf.forEach(b=>{ const k=b.paymentMethod||"Other"; m[k]=(m[k]||0)+Number(b.amount||0); });
   const ents=Object.entries(m).sort((a,b)=>b[1]-a[1]); const mmax=Math.max(1,...ents.map(e=>e[1]));
-  $("payByMethod").innerHTML=ents.length?ents.map(([k,v])=>'<div class="barline"><span class="bl-l">'+esc(k)+'</span><span class="bl-track"><span class="bl-fill" style="width:'+(v/mmax*100)+'%"></span></span><span class="bl-v">'+peso(v)+'</span></div>').join(""):'<div class="empty">No payments yet.</div>';
+  $("payByMethod").innerHTML=ents.length?ents.map(([k,v])=>'<div class="barline"><span class="bl-l">'+esc(k)+'</span><span class="bl-track"><span class="bl-fill" style="width:'+(v/mmax*100)+'%"></span></span><span class="bl-v">'+peso(v)+'</span></div>').join(""):'<div class="empty">No payment methods configured yet.</div>';
   const tp=lastM>0?Math.round((thisM-lastM)/lastM*100):(thisM>0?100:0);
   $("payTrend").innerHTML='<div class="big-stat">'+peso(thisM)+'</div><div class="big-sub">'+(tp>=0?'<span style="color:var(--green-d);font-weight:700">▲ '+tp+'%</span>':'<span style="color:var(--cancel);font-weight:700">▼ '+Math.abs(tp)+'%</span>')+' vs last month ('+peso(lastM)+')</div>';
   const sorted=conf.slice().sort((a,b)=>a.date<b.date?1:-1).slice(0,25);
