@@ -295,6 +295,11 @@
   .admin-row { display:flex; align-items:center; gap:10px; padding:12px 0; border-bottom:1px solid var(--line); }
   .admin-row .an { font-weight:700; }
   .admin-row .ar { margin-left:auto; display:flex; gap:8px; align-items:center; }
+  .note-box { margin-top:14px; padding-top:14px; border-top:1px solid var(--line); }
+  .note-label { display:block; font-size:12px; font-weight:800; text-transform:uppercase; letter-spacing:.04em; color:var(--navy); margin-bottom:6px; }
+  .note-input { width:100%; min-height:64px; padding:10px 12px; border:1px solid var(--line); border-radius:10px; font:inherit; resize:vertical; background:#fff; margin-bottom:8px; }
+  .note-input:focus { outline:2px solid var(--green); border-color:var(--green); }
+  .note-msg { font-size:12px; font-weight:700; color:var(--green-d); margin-left:10px; }
   .mini-btn { border:1px solid var(--line); background:#fff; border-radius:8px; padding:7px 12px; font:inherit; font-weight:700; font-size:12px; cursor:pointer; color:var(--navy); }
   .mini-btn.danger { color:var(--cancel); border-color:#F0C7C2; }
   .mini-btn:hover { border-color:var(--green); }
@@ -345,6 +350,21 @@
   .save-bar { display:flex; align-items:center; gap:14px; margin-top:18px; }
   .save-bar .msg { font-size:13px; font-weight:600; color:var(--green-d); }
   .settings-stack { display:flex; flex-direction:column; gap:16px; }
+  .rate-row, .promo-row { display:flex; align-items:center; gap:12px; padding:12px 0; border-bottom:1px solid var(--line); }
+  .rate-row .rr-main, .promo-row .pr-main { flex:1; min-width:0; }
+  .rate-row .rr-t { font-weight:700; }
+  .promo-row .pr-code { font-weight:800; color:var(--navy); }
+  .promo-row .pr-sub { font-size:12.5px; color:var(--muted); }
+  .promo-row .pr-act { display:flex; gap:8px; align-items:center; }
+  .switch-row { display:flex; align-items:center; justify-content:space-between; gap:10px; padding:10px 0; font-weight:600; font-size:14px; }
+  .wstep2 { font-size:12px; font-weight:800; letter-spacing:.03em; text-transform:uppercase; color:var(--navy); margin:18px 0 10px; }
+  .wstep2 .opt2 { color:var(--muted); font-weight:500; text-transform:none; letter-spacing:0; }
+  .day-picker { display:flex; flex-wrap:wrap; gap:8px; }
+  .day-btn { border:1px solid var(--line); background:#fff; border-radius:999px; padding:8px 14px; font:inherit; font-weight:700; font-size:13px; cursor:pointer; color:var(--muted); }
+  .day-btn.on { background:var(--green); color:#fff; border-color:var(--green); }
+  .win-row { display:flex; align-items:center; gap:8px; margin-bottom:8px; }
+  .win-row input { flex:1; min-width:0; padding:10px 11px; border:1px solid var(--line); border-radius:9px; font:inherit; background:#fff; }
+  .win-row .rm { flex-shrink:0; border:1px solid #F0C7C2; color:var(--cancel); background:#fff; border-radius:9px; padding:9px 12px; font:inherit; font-weight:700; cursor:pointer; }
 
   /* courts editor */
   .court-edit { display:grid; grid-template-columns:1.4fr 1fr 1fr auto auto; gap:10px; align-items:center; padding:12px 0; border-bottom:1px solid var(--line); }
@@ -492,15 +512,14 @@
 
       <!-- ===== PRICING ===== -->
       <section id="sec-pricing" class="sec">
-        <div class="sec-head"><h2>Pricing</h2><p>Set your rates, operating hours, and booking rules. These control what your booking page charges.</p></div>
+        <div class="sec-head"><h2>Pricing</h2><p>Set your operating hours, time-based rates, booking rules, and promo codes.</p></div>
         <div class="settings-stack">
           <div class="card">
-            <div class="card-head"><h3>Operating Hours &amp; Rate</h3></div>
+            <div class="card-head"><h3>Operating Hours</h3></div>
             <div class="form-grid">
               <div class="fld"><label>Opening hour (0–23)</label><input type="number" id="set_openHour" min="0" max="23" /></div>
               <div class="fld"><label>Closing hour (1–24)</label><input type="number" id="set_closeHour" min="1" max="24" /></div>
               <div class="fld"><label>Slot length (minutes)</label><input type="number" id="set_slotMinutes" min="15" step="15" /></div>
-              <div class="fld"><label>Rate per hour (₱)</label><input type="number" id="set_ratePerHour" min="0" /></div>
             </div>
           </div>
 
@@ -514,20 +533,27 @@
           </div>
 
           <div class="save-bar">
-            <button class="act act-confirm" id="savePricingBtn" style="max-width:220px;">Save pricing</button>
+            <button class="act act-confirm" id="savePricingBtn" style="max-width:220px;">Save hours &amp; rules</button>
             <span class="msg" id="pricingMsg"></span>
           </div>
 
           <div class="card">
-            <div class="card-head"><h3>Time-based Pricing &amp; Promo Codes</h3><span class="badge pending">Coming soon</span></div>
-            <p class="muted-sub" style="margin-bottom:6px;">Advanced pricing tools we can switch on for your club when you're ready:</p>
-            <ul class="soon-list">
-              <li>Peak / off-peak rates by time of day</li>
-              <li>Weekday vs weekend pricing</li>
-              <li>Member vs guest rates</li>
-              <li>Promo &amp; discount codes</li>
-            </ul>
-            <p style="font-size:13px;margin-top:10px;">Message your provider to activate these. 🎟️</p>
+            <div class="card-head"><h3>Time-based Pricing</h3></div>
+            <p class="muted-sub" style="margin-bottom:12px;">Set the hourly rate for each time band (e.g. off-peak vs peak). Cover your full opening hours — any hour without a band is charged ₱0.</p>
+            <div id="ratesList"><div class="empty">Loading…</div></div>
+            <h4 style="font-size:14px;color:var(--navy);margin:16px 0 10px;">Add a rate band</h4>
+            <div class="form-grid">
+              <div class="fld"><label>From</label><input type="time" id="newRateStart" step="900" /></div>
+              <div class="fld"><label>To</label><input type="time" id="newRateEnd" step="900" /></div>
+              <div class="fld"><label>Rate per hour (₱)</label><input type="number" id="newRateAmt" min="0" /></div>
+            </div>
+            <div class="form-err" id="rateErr"></div>
+            <div style="margin-top:12px;"><button class="act act-confirm" id="addRateBtn" style="max-width:200px;">Add rate band</button></div>
+          </div>
+
+          <div class="card">
+            <div class="card-head"><h3>Promo Codes</h3><button class="act act-confirm" id="addPromoBtn" style="margin-left:auto;max-width:170px;">+ Promo Code</button></div>
+            <div id="promosList"><div class="empty">Loading…</div></div>
           </div>
         </div>
       </section>
@@ -631,6 +657,31 @@
   <button class="btn-ghost" id="supClose" style="width:100%;margin-top:12px;padding:13px;">Maybe later</button>
 </div></div>
 
+<div class="overlay" id="promoOverlay"><div class="modal" style="max-width:560px;">
+  <h3>New Promo Code</h3>
+  <p class="sub">Create a discount code your players can enter on the booking page.</p>
+  <div class="fld"><label>Code</label><input id="promoCode" placeholder="SUMMER10" style="text-transform:uppercase;" /></div>
+  <div class="form-grid">
+    <div class="fld"><label>Discount type</label><select id="promoType"><option value="percent">Percent (%)</option><option value="amount">Fixed amount (₱)</option></select></div>
+    <div class="fld"><label>Value</label><input type="number" id="promoValue" min="0" /></div>
+  </div>
+  <label class="switch-row"><span>Active</span><label class="switch"><input type="checkbox" id="promoActive" checked /><span class="sl"></span></label></label>
+
+  <div class="wstep2">Applicable days <span class="opt2">(none selected = all days)</span></div>
+  <div class="day-picker" id="promoDays"></div>
+
+  <div class="wstep2">Applicable time windows <span class="opt2">(none = all day)</span></div>
+  <div id="promoTimes"></div>
+  <button class="mini-btn" id="addTimeWin" style="margin-top:8px;">+ Add time window</button>
+
+  <div class="wstep2">Applicable date ranges <span class="opt2">(none = all dates)</span></div>
+  <div id="promoDates"></div>
+  <button class="mini-btn" id="addDateRange" style="margin-top:8px;">+ Add date range</button>
+
+  <div class="form-err" id="promoErr"></div>
+  <div class="modal-actions"><button class="btn-ghost" id="promoCancel">Cancel</button><button class="act act-confirm" id="promoSave">Save promo</button></div>
+</div></div>
+
 <div id="boot" class="loading">Loading…</div>
 <div class="toast" id="toast"></div>
 
@@ -656,6 +707,21 @@ function parseDstr(s){ const [y,m,d]=s.split("-").map(Number); return new Date(y
 function hm2min(s){ const [h,m]=String(s).split(":").map(Number); return (h||0)*60+(m||0); }
 function hourLabel(mins){ let h=Math.floor(mins/60),m=mins%60; const ap=h>=12&&h<24?"PM":"AM"; let h12=h%12; if(h12===0)h12=12; return m===0?(h12+ap):(h12+":"+pad2(m)+ap); }
 function slotsLabel(slots){ const step=Number(SETTINGS&&SETTINGS.slotMinutes||60); return (slots||[]).slice().sort().map(s=>{const m=hm2min(s); return hourLabel(m)+"-"+hourLabel(m+step);}).join(", "); }
+function slotsRange(slots){
+  const step=Number(SETTINGS&&SETTINGS.slotMinutes||60);
+  const arr=(slots||[]).map(hm2min).sort((a,b)=>a-b);
+  if(!arr.length) return "—";
+  const fmt=(min)=>{ let h=Math.floor(min/60),m=min%60; const ap=h>=12&&h<24?"PM":"AM"; let h12=h%12; if(h12===0)h12=12; return h12+":"+pad2(m)+ap; };
+  const parts=[]; let start=arr[0], prev=arr[0];
+  for(let i=1;i<=arr.length;i++){
+    if(i<arr.length && arr[i]===prev+step){ prev=arr[i]; continue; }
+    const end=prev+step, hrs=(end-start)/60;
+    const hlabel=(Number.isInteger(hrs)?hrs:hrs.toFixed(1))+(hrs===1?" hour":" hours");
+    parts.push(fmt(start)+"-"+fmt(end)+" ("+hlabel+")");
+    if(i<arr.length){ start=arr[i]; prev=arr[i]; }
+  }
+  return parts.join(", ");
+}
 function peso(n){ return "₱"+Number(n||0).toLocaleString("en-PH"); }
 function fmtK(n){ n=Number(n||0); if(n>=1000) return "₱"+Math.round(n/1000)+"K"; return "₱"+Math.round(n); }
 function niceDate(s){ return parseDstr(s).toLocaleDateString("en-US",{weekday:"short",month:"short",day:"numeric"}); }
@@ -742,7 +808,7 @@ async function openSection(name){
   const sec=$("sec-"+name); if(sec) sec.classList.add("show");
   if(name==="dashboard") renderDashboard();
   else if(name==="reports") renderReports();
-  else if(name==="pricing") fillSettings();
+  else if(name==="pricing"){ fillSettings(); renderRates(); renderPromos(); }
   else if(name==="payments") renderPayments();
   else if(name==="settings"){ loadAdmins(); fillSettings(); }
 }
@@ -944,7 +1010,7 @@ function renderList(){
     const st=groupStatus(grp); const courts=[...new Set(grp.map(b=>b.court))].sort();
     const total=grp.reduce((s,b)=>s+Number(b.amount||0),0); const first=grp[0]; const key=groupKey(grp);
     const slotSets=grp.map(b=>(b.slots||[]).slice().sort().join(",")); const allSame=slotSets.every(s=>s===slotSets[0]);
-    let timesHtml = allSame ? '<div class="times">'+slotsLabel(first.slots)+'</div>' : grp.map(b=>'<div class="times"><strong>'+esc(b.court)+'</strong> · '+slotsLabel(b.slots)+'</div>').join("");
+    let timesHtml = allSame ? '<div class="times">'+slotsRange(first.slots)+'</div>' : grp.slice().sort((a,b)=>String(a.court).localeCompare(String(b.court))).map(b=>'<div class="times"><strong>'+esc(b.court)+':</strong> '+slotsRange(b.slots)+'</div>').join("");
     let acts=""; if(st==="pending") acts='<button class="act act-confirm" data-key="'+key+'" data-act="confirm">Confirm</button><button class="act act-cancel" data-key="'+key+'" data-act="cancel">Cancel</button>'; else if(st==="confirmed") acts='<button class="act act-cancel" data-key="'+key+'" data-act="cancel">Cancel booking</button>';
     const card=document.createElement("div"); card.className="booking"; const em=emailOf(first);
     card.innerHTML='<div class="row1"><span class="court">'+esc(courts.join(", "))+'</span><span class="badge '+st+'">'+st+'</span><span class="amt">'+peso(total)+'</span></div>'+timesHtml+'<div class="who"><strong>'+esc(nameOf(first))+'</strong> · '+esc(contactOf(first))+(em?(' · '+esc(em)):'')+'</div>'+(acts?('<div class="actions">'+acts+'</div>'):'');
@@ -981,20 +1047,25 @@ function openDetail(b){
   const total=list.reduce((s,x)=>s+Number(x.amount||0),0);
   const first=list[0]; const key=first.bookingId||first.id; const rid=first.bookingId||first.id;
   const slotSets=list.map(x=>(x.slots||[]).slice().sort().join(",")); const allSame=slotSets.every(s=>s===slotSets[0]);
-  const timesHtml = allSame ? '<div class="mrow"><span>Time:</span> '+slotsLabel(first.slots)+'</div>' : list.map(x=>'<div class="mrow"><span>'+esc(x.court)+':</span> '+slotsLabel(x.slots)+'</div>').join("");
+  const timesHtml = allSame ? '<div class="mrow"><span>Time:</span> '+slotsRange(first.slots)+'</div>' : list.slice().sort((a,b)=>String(a.court).localeCompare(String(b.court))).map(x=>'<div class="mrow"><span>'+esc(x.court)+':</span> '+slotsRange(x.slots)+'</div>').join("");
   let acts=""; if(st==="pending") acts='<button class="act act-confirm" data-key="'+key+'" data-act="confirm">Confirm</button><button class="act act-cancel" data-key="'+key+'" data-act="cancel">Cancel</button>'; else if(st==="confirmed") acts='<button class="act act-cancel" data-key="'+key+'" data-act="cancel">Cancel booking</button>';
+  const existingNote=(first.bookingId && CONTACTS[first.bookingId] && CONTACTS[first.bookingId].note) ? CONTACTS[first.bookingId].note : "";
+  const handledBy=(first.handledBy)||(first.bookingId&&CONTACTS[first.bookingId]&&CONTACTS[first.bookingId].handledBy)||"";
   $("detailModal").innerHTML='<h3>'+esc(courts)+' · <span class="badge '+st+'">'+st+'</span></h3>'+
     '<div class="mrow"><span>Date:</span> '+niceDate(first.date)+'</div>'+ timesHtml +
     '<div class="mrow"><span>Booker:</span> <strong>'+esc(nameOf(first))+'</strong></div>'+
     '<div class="mrow"><span>Contact:</span> '+esc(contactOf(first))+'</div>'+
     (emailOf(first)?'<div class="mrow"><span>Email:</span> '+esc(emailOf(first))+'</div>':'')+
     (first.paymentMethod?'<div class="mrow"><span>Payment:</span> '+esc(first.paymentMethod)+'</div>':'')+
+    (handledBy?'<div class="mrow"><span>Handled by:</span> '+esc(handledBy)+'</div>':'')+
     '<div class="mrow"><span>Total:</span> <strong>'+peso(total)+'</strong></div>'+
+    '<div class="note-box"><label class="note-label">Note</label><textarea id="noteInput" class="note-input" placeholder="Add a private note about this booking…">'+esc(existingNote)+'</textarea><button class="mini-btn" id="saveNoteBtn" data-id="'+esc(first.bookingId||"")+'">Save note</button><span class="note-msg" id="noteMsg"></span></div>'+
     '<div class="modal-actions"><button class="btn-ghost" id="detailClose">Close</button><button class="btn-ghost" id="viewReceiptBtn">View receipt</button></div>'+
     (acts?'<div class="modal-actions">'+acts+'</div>':'');
   $("detailOverlay").classList.add("show");
   $("detailClose").onclick=()=>$("detailOverlay").classList.remove("show");
   $("viewReceiptBtn").onclick=()=>viewReceipt(rid);
+  const snb=$("saveNoteBtn"); if(snb) snb.onclick=async ()=>{ const id=snb.getAttribute("data-id"); if(!id){ $("noteMsg").textContent="No booking id."; return; } snb.disabled=true; try{ await db.collection("bookingContacts").doc(id).set({note:$("noteInput").value.trim()},{merge:true}); if(!CONTACTS[id])CONTACTS[id]={}; CONTACTS[id].note=$("noteInput").value.trim(); $("noteMsg").textContent="Saved ✓"; setTimeout(()=>{const m=$("noteMsg");if(m)m.textContent="";},2500); }catch(e){ console.error(e); $("noteMsg").textContent="Could not save."; } finally{ snb.disabled=false; } };
   $("detailModal").querySelectorAll(".act").forEach(btn=>btn.onclick=async ()=>{ await doAction(btn.getAttribute("data-key"),btn.getAttribute("data-act")); $("detailOverlay").classList.remove("show"); });
 }
 $("detailOverlay").onclick=(e)=>{ if(e.target===$("detailOverlay")) $("detailOverlay").classList.remove("show"); };
@@ -1174,7 +1245,7 @@ function setVal(id,v){ const el=$(id); if(el) el.value=(v==null?"":v); }
 function setChk(id,v){ const el=$(id); if(el) el.checked=!!v; }
 function fillSettings(){
   const s=SETTINGS||{};
-  setVal("set_openHour",s.openHour); setVal("set_closeHour",s.closeHour); setVal("set_slotMinutes",s.slotMinutes); setVal("set_ratePerHour",s.ratePerHour);
+  setVal("set_openHour",s.openHour); setVal("set_closeHour",s.closeHour); setVal("set_slotMinutes",s.slotMinutes);
   setVal("set_advanceDays",s.advanceDays); setVal("set_holdMinutes",s.holdMinutes); setVal("set_idPrefix",s.idPrefix);
   const pm=(s.paymentMethods||[]).map(x=>String(x).toLowerCase());
   setChk("pm_gcash",pm.includes("gcash")); setChk("pm_maya",pm.includes("maya")); setChk("pm_bank",pm.includes("bank"));
@@ -1197,7 +1268,7 @@ async function saveConfig(data,btn,msg){
 }
 $("savePricingBtn").onclick=()=>{
   const data={
-    openHour:sNum("set_openHour",8), closeHour:sNum("set_closeHour",22), slotMinutes:sNum("set_slotMinutes",60), ratePerHour:sNum("set_ratePerHour",0),
+    openHour:sNum("set_openHour",8), closeHour:sNum("set_closeHour",22), slotMinutes:sNum("set_slotMinutes",60),
     advanceDays:sNum("set_advanceDays",7), holdMinutes:sNum("set_holdMinutes",0), idPrefix:sStr("set_idPrefix")
   };
   saveConfig(data,$("savePricingBtn"),$("pricingMsg"));
@@ -1213,6 +1284,98 @@ $("saveSettingsBtn").onclick=()=>{
     facebookName:sStr("set_facebookName"), facebookLink:sStr("set_facebookLink"), instagramName:sStr("set_instagramName"), instagramLink:sStr("set_instagramLink")
   };
   saveConfig(data,$("saveSettingsBtn"),$("settingsMsg"));
+};
+
+/* ---------- time-based rates ---------- */
+function hmMin(s){ const [h,m]=String(s||"0:0").split(":").map(Number); return (h||0)*60+(m||0); }
+function fmtMin(m){ m=Number(m||0); let h=Math.floor(m/60),mm=m%60; const ap=h>=12&&h<24?"PM":"AM"; let h12=h%12; if(h12===0)h12=12; return h12+(mm?(":"+pad2(mm)):"")+ap; }
+function fmtHM(hm){ return fmtMin(hmMin(hm)); }
+let RATES_ALL=[];
+async function renderRates(){
+  const wrap=$("ratesList"); wrap.innerHTML='<div class="empty">Loading…</div>';
+  try{
+    const rs=await db.collection("rates").get(); RATES_ALL=[]; rs.forEach(d=>RATES_ALL.push({id:d.id, ...d.data()}));
+    RATES_ALL.sort((a,b)=>hmMin(a.start)-hmMin(b.start));
+    if(!RATES_ALL.length){ wrap.innerHTML='<div class="empty">No rate bands yet. Add one below.</div>'; return; }
+    wrap.innerHTML="";
+    RATES_ALL.forEach(r=>{
+      const row=document.createElement("div"); row.className="rate-row";
+      row.innerHTML='<div class="rr-main"><div class="rr-t">'+fmtHM(r.start)+' – '+fmtHM(r.end)+'</div><div class="pr-sub">'+peso(r.rate)+' / hour</div></div><button class="mini-btn danger" data-del="'+r.id+'">Delete</button>';
+      wrap.appendChild(row);
+    });
+    wrap.querySelectorAll("[data-del]").forEach(b=>b.onclick=async()=>{ if(!confirm("Delete this rate band?"))return; try{ await db.collection("rates").doc(b.getAttribute("data-del")).delete(); toast("Rate band deleted."); renderRates(); }catch(e){ console.error(e); toast("Could not delete."); } });
+  }catch(e){ console.error(e); wrap.innerHTML='<div class="empty">Could not load rates.</div>'; }
+}
+$("addRateBtn").onclick=async ()=>{
+  const s=$("newRateStart").value, e=$("newRateEnd").value, amt=Number($("newRateAmt").value||0); $("rateErr").textContent="";
+  if(!s||!e){ $("rateErr").textContent="Please set both From and To times."; return; }
+  if(hmMin(e)<=hmMin(s)){ $("rateErr").textContent="'To' must be after 'From'."; return; }
+  if(!(amt>=0)){ $("rateErr").textContent="Enter a valid rate."; return; }
+  const btn=$("addRateBtn"); btn.disabled=true; btn.textContent="Adding…";
+  try{ await db.collection("rates").add({ start:s, end:e, rate:amt }); $("newRateStart").value=""; $("newRateEnd").value=""; $("newRateAmt").value=""; toast("Rate band added."); renderRates(); }
+  catch(e){ console.error(e); $("rateErr").textContent="Could not add rate band."; }
+  finally{ btn.disabled=false; btn.textContent="Add rate band"; }
+};
+
+/* ---------- promo codes ---------- */
+const DOW=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+let PROMOS_ALL=[];
+async function renderPromos(){
+  const wrap=$("promosList"); wrap.innerHTML='<div class="empty">Loading…</div>';
+  try{
+    const ps=await db.collection("promos").get(); PROMOS_ALL=[]; ps.forEach(d=>PROMOS_ALL.push({id:d.id, ...d.data()}));
+    PROMOS_ALL.sort((a,b)=>String(a.code||"").localeCompare(String(b.code||"")));
+    if(!PROMOS_ALL.length){ wrap.innerHTML='<div class="empty">No promo codes yet. Tap “+ Promo Code” to create one.</div>'; return; }
+    wrap.innerHTML="";
+    PROMOS_ALL.forEach(p=>{
+      const val=p.discountType==="amount"?(peso(p.discountValue)+" off"):(p.discountValue+"% off");
+      const bits=[];
+      if(Array.isArray(p.days)&&p.days.length) bits.push(p.days.map(d=>DOW[d]).join("/"));
+      if(Array.isArray(p.timeWindows)&&p.timeWindows.length) bits.push(p.timeWindows.map(w=>fmtMin(w.start)+"-"+fmtMin(w.end)).join(", "));
+      if(Array.isArray(p.dateRanges)&&p.dateRanges.length) bits.push(p.dateRanges.map(r=>r.start+"→"+r.end).join(", "));
+      const sub=bits.length?bits.join(" · "):"All days · all times · all dates";
+      const active=p.active!==false;
+      const row=document.createElement("div"); row.className="promo-row";
+      row.innerHTML='<div class="pr-main"><div class="pr-code">'+esc(p.code)+' <span class="badge '+(active?"active":"disabled")+'">'+(active?"Active":"Off")+'</span></div><div class="pr-sub">'+val+' · '+esc(sub)+'</div></div>'+
+        '<div class="pr-act"><button class="mini-btn" data-toggle="'+p.id+'">'+(active?"Turn off":"Turn on")+'</button><button class="mini-btn danger" data-del="'+p.id+'">Delete</button></div>';
+      wrap.appendChild(row);
+    });
+    wrap.querySelectorAll("[data-toggle]").forEach(b=>b.onclick=async()=>{ const id=b.getAttribute("data-toggle"); const p=PROMOS_ALL.find(x=>x.id===id); try{ await db.collection("promos").doc(id).update({active:!(p.active!==false)}); renderPromos(); }catch(e){ console.error(e); toast("Could not update."); } });
+    wrap.querySelectorAll("[data-del]").forEach(b=>b.onclick=async()=>{ if(!confirm("Delete this promo code?"))return; try{ await db.collection("promos").doc(b.getAttribute("data-del")).delete(); toast("Promo deleted."); renderPromos(); }catch(e){ console.error(e); toast("Could not delete."); } });
+  }catch(e){ console.error(e); wrap.innerHTML='<div class="empty">Could not load promos.</div>'; }
+}
+function winRow(){ const div=document.createElement("div"); div.className="win-row"; div.innerHTML='<input type="time" step="900" class="w-start"><span style="color:var(--muted)">to</span><input type="time" step="900" class="w-end"><button class="rm" type="button">✕</button>'; div.querySelector(".rm").onclick=()=>div.remove(); return div; }
+function dateRow(){ const div=document.createElement("div"); div.className="win-row"; div.innerHTML='<input type="date" class="d-start"><span style="color:var(--muted)">to</span><input type="date" class="d-end"><button class="rm" type="button">✕</button>'; div.querySelector(".rm").onclick=()=>div.remove(); return div; }
+$("addPromoBtn").onclick=()=>openPromoModal();
+$("addTimeWin").onclick=()=>$("promoTimes").appendChild(winRow());
+$("addDateRange").onclick=()=>$("promoDates").appendChild(dateRow());
+$("promoCancel").onclick=()=>$("promoOverlay").classList.remove("show");
+$("promoOverlay").onclick=(e)=>{ if(e.target===$("promoOverlay")) $("promoOverlay").classList.remove("show"); };
+function openPromoModal(){
+  $("promoCode").value=""; $("promoType").value="percent"; $("promoValue").value=""; $("promoActive").checked=true; $("promoErr").textContent="";
+  const dp=$("promoDays"); dp.innerHTML=""; DOW.forEach((d,i)=>{ const b=document.createElement("button"); b.type="button"; b.className="day-btn"; b.textContent=d; b.dataset.dow=i; b.onclick=()=>b.classList.toggle("on"); dp.appendChild(b); });
+  $("promoTimes").innerHTML=""; $("promoDates").innerHTML="";
+  $("promoOverlay").classList.add("show");
+}
+$("promoSave").onclick=async ()=>{
+  $("promoErr").textContent="";
+  const code=$("promoCode").value.trim().toUpperCase(), type=$("promoType").value, value=Number($("promoValue").value||0);
+  if(!code){ $("promoErr").textContent="Enter a code."; return; }
+  if(!(value>0)){ $("promoErr").textContent="Enter a discount value greater than 0."; return; }
+  if(type==="percent" && value>100){ $("promoErr").textContent="Percent cannot exceed 100."; return; }
+  const days=[...$("promoDays").querySelectorAll(".day-btn.on")].map(b=>Number(b.dataset.dow));
+  const timeWindows=[]; let terr=false;
+  $("promoTimes").querySelectorAll(".win-row").forEach(r=>{ const s=r.querySelector(".w-start").value, e=r.querySelector(".w-end").value; if(s&&e){ if(hmMin(e)<=hmMin(s)) terr=true; else timeWindows.push({start:hmMin(s),end:hmMin(e)}); } });
+  if(terr){ $("promoErr").textContent="Each time window's end must be after its start."; return; }
+  const dateRanges=[]; let derr=false;
+  $("promoDates").querySelectorAll(".win-row").forEach(r=>{ const s=r.querySelector(".d-start").value, e=r.querySelector(".d-end").value; if(s&&e){ if(e<s) derr=true; else dateRanges.push({start:s,end:e}); } });
+  if(derr){ $("promoErr").textContent="Each date range's end must be on or after its start."; return; }
+  const btn=$("promoSave"); btn.disabled=true; btn.textContent="Saving…";
+  try{
+    await db.collection("promos").add({ code:code, discountType:type, discountValue:value, active:$("promoActive").checked, days:days, timeWindows:timeWindows, dateRanges:dateRanges, createdAt:firebase.firestore.FieldValue.serverTimestamp() });
+    $("promoOverlay").classList.remove("show"); toast("Promo code saved."); renderPromos();
+  }catch(e){ console.error(e); $("promoErr").textContent="Could not save. Make sure the promos rule is added in Firebase."; }
+  finally{ btn.disabled=false; btn.textContent="Save promo"; }
 };
 
 /* ---------- payments ---------- */
