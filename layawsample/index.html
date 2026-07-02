@@ -110,6 +110,15 @@
   .sum-item .x { color:var(--muted); cursor:pointer; font-weight:700; }
   .sum-total { display:flex; justify-content:space-between; align-items:center; margin:14px 0; }
   .sum-total .lab { font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:var(--muted); font-weight:700; }
+  .sum-total .tot-wrap { display:flex; flex-direction:column; align-items:flex-end; line-height:1.1; }
+  .sum-total .orig { font-size:13px; font-weight:700; color:var(--muted); text-decoration:line-through; }
+  .voucher { margin:-4px 0 14px; }
+  .voucher-in { display:flex; gap:8px; }
+  .voucher-in input { flex:1; min-width:0; padding:11px 12px; border:1px solid var(--line); border-radius:10px; font:inherit; text-transform:uppercase; background:#fff; }
+  .voucher-in input:focus { outline:2px solid var(--green); border-color:var(--green); }
+  .btn-apply { flex-shrink:0; background:var(--navy); color:#fff; border:none; border-radius:10px; padding:0 14px; font:inherit; font-weight:700; font-size:13px; cursor:pointer; white-space:nowrap; }
+  .btn-apply:hover { background:var(--navy-d); }
+  .voucher-msg { font-size:12.5px; font-weight:600; margin-top:8px; min-height:16px; }
   .sum-total .val { font-size:26px; font-weight:800; color:var(--navy); }
   .btn { width:100%; background:var(--green); color:#fff; border:none; padding:15px; border-radius:12px; font:inherit; font-weight:700; font-size:16px; cursor:pointer; transition:background .15s ease; }
   .btn:hover { background:var(--green-d); }
@@ -264,7 +273,11 @@ table.slots .time-cell { position: sticky; left: 0; background: var(--card); z-i
         <h3>Reservation Summary</h3>
         <div id="sumEmpty" class="sum-empty">No slots selected yet. Pick a date, then tap open slots.</div>
         <div id="sumList" class="sum-list"></div>
-        <div class="sum-total"><span class="lab">Estimated total</span><span class="val" id="sumTotal">₱0</span></div>
+        <div class="sum-total"><span class="lab">Estimated total</span><span class="tot-wrap"><span class="orig" id="sumOrig" style="display:none;"></span><span class="val" id="sumTotal">₱0</span></span></div>
+        <div class="voucher">
+          <div class="voucher-in"><input id="voucherInput" placeholder="Voucher code" autocomplete="off" /><button class="btn-apply" id="applyVoucherBtn">Apply voucher</button></div>
+          <div class="voucher-msg" id="voucherMsg"></div>
+        </div>
         <button class="btn" id="continueBtn" disabled>Continue</button>
         <p class="sum-note">Your booking starts as pending until the club confirms it.</p>
       </div>
@@ -348,7 +361,7 @@ let db;
 try { firebase.initializeApp(firebaseConfig); db=firebase.firestore(); }
 catch(e){ showError("Could not connect. Check the Firebase config at the top of this file."); }
 
-let SETTINGS=null, COURTS=[], RATES=[];
+let SETTINGS=null, COURTS=[], RATES=[], PROMOS=[], appliedPromo=null;
 let viewYear, viewMonth, selectedDate=null;
 let cart=new Set();                 /* keys: "YYYY-MM-DD|Court|HH:MM" */
 let bookedSet=new Set(), pendingSet=new Set();
@@ -382,6 +395,7 @@ async function loadData(){
     COURTS.sort((a,b)=>a.name.localeCompare(b.name));
     if(!COURTS.length){ showError("No active courts found."); return; }
     try{ const rs=await db.collection("rates").get(); RATES=[]; rs.forEach(d=>{ const r=d.data(); let s=hm2min(r.start),e=hm2min(r.end); if(e<=s)e+=1440; RATES.push({start:s,end:e,rate:Number(r.rate)}); }); RATES.sort((a,b)=>a.start-b.start); }catch(e){ RATES=[]; }
+    try{ const ps=await db.collection("promos").get(); PROMOS=[]; ps.forEach(d=>PROMOS.push({id:d.id, ...d.data()})); }catch(e){ PROMOS=[]; }
 
     applyTheme(); renderBrand(); startHero(); renderFooterLinks();
     const t=today(); viewYear=t.getFullYear(); viewMonth=t.getMonth(); selectedDate=dstr(t);
@@ -492,6 +506,35 @@ function renderGrid(){
 function afterCartChange(){ renderGrid(); updateSummary(); renderCalendar(); }
 
 function cartTotal(){ let t=0; cart.forEach(k=>{ t+=slotCost(hm2min(k.split("|")[2])); }); return t; }
+function promoQualifies(promo,date,hhmm){
+  const wd=parseDstr(date).getDay();
+  if(Array.isArray(promo.days) && promo.days.length && !promo.days.includes(wd)) return false;
+  if(Array.isArray(promo.dateRanges) && promo.dateRanges.length){ if(!promo.dateRanges.some(r=> date>=r.start && date<=r.end)) return false; }
+  if(Array.isArray(promo.timeWindows) && promo.timeWindows.length){ const m=hm2min(hhmm); if(!promo.timeWindows.some(w=> m>=Number(w.start) && m<Number(w.end))) return false; }
+  return true;
+}
+function computePromoDiscount(promo){
+  let qsub=0, gross=0;
+  cart.forEach(k=>{ const [date,court,hhmm]=k.split("|"); const c=slotCost(hm2min(hhmm)); gross+=c; if(promoQualifies(promo,date,hhmm)) qsub+=c; });
+  if(qsub<=0) return {discount:0, reason:"not applicable to your selected date or time"};
+  let disc = (promo.discountType==="amount") ? Math.min(Number(promo.discountValue||0), gross) : Math.round(qsub*Number(promo.discountValue||0)/100);
+  if(disc<0) disc=0; if(disc>gross) disc=gross;
+  return {discount:disc};
+}
+function currentDiscount(){ return appliedPromo ? (computePromoDiscount(appliedPromo).discount||0) : 0; }
+function netTotal(){ return Math.max(0, cartTotal()-currentDiscount()); }
+function setVoucherMsg(m,ok){ const el=$("voucherMsg"); if(!el) return; el.textContent=m||""; el.style.color= ok?"var(--green-d)":"var(--cancel)"; }
+$("applyVoucherBtn").onclick=()=>{
+  const code=$("voucherInput").value.trim().toUpperCase();
+  if(!code){ setVoucherMsg("Enter a voucher code.",false); return; }
+  if(cart.size===0){ setVoucherMsg("Select your slots first.",false); return; }
+  const promo=PROMOS.find(p=>String(p.code||"").toUpperCase()===code && p.active!==false);
+  if(!promo){ appliedPromo=null; setVoucherMsg("Invalid or inactive voucher code.",false); updateSummary(); return; }
+  const r=computePromoDiscount(promo);
+  if(!r.discount){ appliedPromo=null; setVoucherMsg("This voucher is "+(r.reason||"not applicable")+".",false); updateSummary(); return; }
+  appliedPromo=promo; setVoucherMsg("Voucher \""+code+"\" applied — you save "+peso(r.discount)+".",true); updateSummary();
+};
+
 function updateSummary(){
   const list=$("sumList"), empty=$("sumEmpty"); list.innerHTML=""; let total=0;
   if(cart.size===0){ empty.style.display="block"; }
@@ -513,12 +556,22 @@ function updateSummary(){
       });
     });
   }
-  $("sumTotal").textContent=peso(total);
+  // apply voucher discount if one is active (re-validate against current cart)
+  let disc=0;
+  if(appliedPromo){
+    const r=computePromoDiscount(appliedPromo);
+    if(r.discount>0){ disc=r.discount; }
+    else { appliedPromo=null; if($("voucherInput").value.trim()) setVoucherMsg("Voucher no longer applies to your selected slots.",false); }
+  }
+  const net=Math.max(0,total-disc);
+  const orig=$("sumOrig");
+  if(disc>0){ orig.style.display="block"; orig.textContent=peso(total); $("sumTotal").textContent=peso(net); }
+  else { orig.style.display="none"; $("sumTotal").textContent=peso(total); }
   $("continueBtn").disabled=cart.size===0;
-  $("mbSlots").textContent=cart.size; $("mbTotal").textContent=peso(total); $("mbContinue").disabled=cart.size===0;
+  $("mbSlots").textContent=cart.size; $("mbTotal").textContent=peso(net); $("mbContinue").disabled=cart.size===0;
 }
 
-function holdMins(){ const m=Number(SETTINGS&&SETTINGS.holdMinutes); return (m&&m>0)?m:10; }
+function holdMins(){ return 5; } /* checkout completion window — separate from the status-page hold */
 function startHoldTimer(){
   clearHoldTimer();
   holdDeadline=Date.now()+holdMins()*60000;
@@ -544,6 +597,7 @@ $("expireBtn").onclick=()=>{
   $("checkoutView").style.display="none"; $("successView").style.display="none"; $("app").style.display="block";
   if(window.innerWidth<=1000) $("mobileBar").style.display="flex";
   $("nameInput").value=""; $("contactInput").value=""; $("emailInput").value="";
+  appliedPromo=null; if($("voucherInput"))$("voucherInput").value=""; setVoucherMsg("",true);
   $("receiptPreview").style.display="none"; const big=$("uploadBox").querySelector(".big"); if(big) big.textContent="☁️ Tap to upload image";
   renderGrid(); updateSummary(); renderCalendar(); window.scrollTo({top:0,behavior:"smooth"});
 };
@@ -584,7 +638,7 @@ function showPayDetail(m){
     if(m.number) html+='<button class="copy-btn" id="copyNo">Copy</button>';
     html+='</div>';
   }
-  html+='<div class="exact">Please send the exact amount: <strong style="color:var(--navy);font-size:17px;">'+peso(cartTotal())+'</strong></div>';
+  html+='<div class="exact">Please send the exact amount: <strong style="color:var(--navy);font-size:17px;">'+peso(netTotal())+'</strong></div>';
   d.innerHTML=html;
   if(m.number){ const c=$("copyNo"); if(c) c.onclick=()=>{ navigator.clipboard.writeText(m.number).then(()=>toast("Number copied!")).catch(()=>toast("Copy failed")); }; }
 }
@@ -639,21 +693,26 @@ $("submitBtn").onclick=async ()=>{
 
     const bookingId=await nextBookingId();
     const batch=db.batch();
+    // gross per court + total, then apply any voucher discount proportionally
+    const courtAmt={}; let gross=0;
+    Object.keys(byDateCourt).forEach(date=>{ Object.keys(byDateCourt[date]).forEach(court=>{ const amt=byDateCourt[date][court].reduce((sum,s)=>sum+slotCost(hm2min(s)),0); courtAmt[date+"|"+court]=amt; gross+=amt; }); });
+    const disc = appliedPromo ? (computePromoDiscount(appliedPromo).discount||0) : 0;
+    const factor = (disc>0 && gross>0) ? (gross-disc)/gross : 1;
     Object.keys(byDateCourt).forEach(date=>{
       Object.keys(byDateCourt[date]).forEach(court=>{
         const slots=byDateCourt[date][court].sort();
-        const amount=slots.reduce((sum,s)=>sum+slotCost(hm2min(s)),0);
+        const amount=Math.round(courtAmt[date+"|"+court]*factor);
         const ref=db.collection("bookings").doc();
         batch.set(ref,{ bookingId:bookingId, date:date, court:court, slots:slots, startTime:slots[0], endTime:slots[slots.length-1], amount:amount, paymentMethod:chosenPayment||"", status:"pending", createdAt:firebase.firestore.FieldValue.serverTimestamp() });
       });
     });
     // Booker PII is kept private (managers only) — never in the public bookings docs
-    batch.set(db.collection("bookingContacts").doc(bookingId),{ bookingId:bookingId, bookerName:name, contact:contact, email:email, createdAt:firebase.firestore.FieldValue.serverTimestamp() });
+    batch.set(db.collection("bookingContacts").doc(bookingId),{ bookingId:bookingId, bookerName:name, contact:contact, email:email, promoCode: appliedPromo?String(appliedPromo.code||""):"", discount: disc, createdAt:firebase.firestore.FieldValue.serverTimestamp() });
     await batch.commit();
     if(receiptData){ try{ await db.collection("receipts").doc(bookingId).set({ bookingId:bookingId, image:receiptData, createdAt:firebase.firestore.FieldValue.serverTimestamp() }); }catch(e){ console.warn("receipt save failed",e); } }
 
     $("checkoutView").style.display="none"; $("successView").style.display="block";
-    clearHoldTimer();
+    clearHoldTimer(); cart.clear(); appliedPromo=null; if($("voucherInput"))$("voucherInput").value=""; setVoucherMsg("",true);
     $("successId").textContent=bookingId;
     $("viewStatusBtn").onclick=()=>{ window.location.href="status.html?id="+encodeURIComponent(bookingId); };
     window.scrollTo({top:0,behavior:"smooth"});
@@ -662,7 +721,8 @@ $("submitBtn").onclick=async ()=>{
 
 $("anotherBtn").onclick=()=>{
   clearHoldTimer();
-  cart.clear(); chosenPayment=null; receiptData=null;
+  cart.clear(); chosenPayment=null; receiptData=null; appliedPromo=null;
+  if($("voucherInput"))$("voucherInput").value=""; setVoucherMsg("",true);
   $("nameInput").value=""; $("contactInput").value=""; $("emailInput").value="";
   $("receiptPreview").style.display="none"; $("uploadBox").querySelector(".big").textContent="☁️ Tap to upload image";
   $("successView").style.display="none"; $("app").style.display="block";
