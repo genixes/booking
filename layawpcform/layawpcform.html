@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>LAYAW System — Build Your Booking Page</title>
+<style>
+  :root{
+    --navy:#0d2847; --navy2:#12365f; --teal:#00a0b0; --teal-dk:#008b9e;
+    --ink:#16202e; --muted:#6a7684; --line:#e3e7ec; --soft:#f4f7f9;
+    --paper:#ffffff; --bg:#eef2f5;
+    --teal-bg:#e4f5f7; --navy-bg:#e8eef5;
+    --ok:#0f7a5f; --ok-bg:#e2f6ee;
+    --radius:clamp(10px,2.5vw,14px);
+    --header-bg-image:url("https://i.imgur.com/PnhPenW.png");
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{-webkit-text-size-adjust:100%}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:var(--bg);color:var(--ink);line-height:1.55;
+    font-size:clamp(14px,1.6vw,15px);
+    -webkit-font-smoothing:antialiased;overflow-x:hidden}
+  .shell{width:100%;max-width:760px;margin:0 auto;
+    padding:0 clamp(12px,4vw,18px) clamp(40px,10vw,60px)}
+
+  .cover{
+    position:relative;background-color:#ffffff;
+    border-radius:0 0 clamp(16px,4vw,22px) clamp(16px,4vw,22px);
+    padding:clamp(26px,7vw,34px) clamp(20px,5vw,28px);
+    text-align:center;color:var(--navy);
+    margin-bottom:clamp(16px,4vw,22px);overflow:hidden;
+    border:1px solid var(--line);border-top:none;
+    padding-top:max(clamp(26px,7vw,34px),env(safe-area-inset-top))}
+  .cover > *{position:relative;z-index:1}
+  .cover img{height:clamp(112px,28vw,156px);width:auto;margin-bottom:6px}
+  .cover h1{font-size:clamp(19px,4.6vw,24px);font-weight:700;letter-spacing:.4px;margin-top:8px;color:var(--navy)}
+  .cover p{font-size:clamp(13px,3.2vw,14px);color:var(--muted);margin-top:8px;max-width:520px;margin-inline:auto}
+  .tagpills{margin-top:12px;font-size:clamp(10px,2.6vw,11px);letter-spacing:2px;color:var(--teal-dk);font-weight:600}
+
+  .card{background:var(--paper);border:1px solid var(--line);border-radius:var(--radius);
+    padding:clamp(18px,4.5vw,24px);margin-bottom:clamp(12px,3vw,16px)}
+  .card > .sec-h{display:flex;align-items:center;gap:11px;margin-bottom:clamp(14px,3.5vw,18px)}
+  .sec-h .num{width:28px;height:28px;border-radius:8px;background:var(--navy);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0}
+  .sec-h .tt{font-size:clamp(15px,3.8vw,17px);font-weight:700;color:var(--navy)}
+  .sec-h .tt small{display:block;font-size:12px;font-weight:400;color:var(--muted);letter-spacing:0}
+
+  .fld{margin-bottom:15px}
+  .fld:last-child{margin-bottom:0}
+  .fld label{display:block;font-size:clamp(13px,3.2vw,13.5px);font-weight:600;margin-bottom:6px;color:var(--ink)}
+  .fld label .req{color:var(--teal-dk);margin-left:2px}
+  .fld .help{font-size:12px;color:var(--muted);margin-top:-2px;margin-bottom:6px}
+  input[type=text],input[type=email],input[type=tel],input[type=number],input[type=time],input[type=url],select,textarea{
+    width:100%;padding:clamp(10px,2.6vw,12px) 13px;border:1px solid var(--line);border-radius:9px;
+    font-size:16px; /* 16px prevents iOS zoom-on-focus */
+    font-family:inherit;background:#fbfcfd;color:var(--ink)}
+  @media(min-width:560px){input,select,textarea{font-size:14.5px}}
+  input:focus,select:focus,textarea:focus{outline:none;border-color:var(--teal);box-shadow:0 0 0 3px var(--teal-bg)}
+  textarea{resize:vertical;min-height:64px}
+  .row2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:clamp(10px,3vw,14px)}
+
+  .chips{display:flex;flex-wrap:wrap;gap:9px}
+  .chip{padding:10px 16px;border:1px solid var(--line);border-radius:22px;font-size:clamp(13px,3.2vw,13.5px);
+    cursor:pointer;background:#fbfcfd;color:var(--muted);user-select:none;transition:.12s;
+    -webkit-tap-highlight-color:transparent;min-height:40px;display:flex;align-items:center}
+  .chip:hover{border-color:var(--teal)}
+  .chip.on{background:var(--navy);border-color:var(--navy);color:#fff;font-weight:600}
+
+  .stepper{display:inline-flex;align-items:center;gap:9px}
+  .stepper button{width:clamp(42px,11vw,46px);height:clamp(42px,11vw,46px);border:1px solid var(--line);
+    background:#fbfcfd;border-radius:10px;font-size:22px;cursor:pointer;color:var(--navy);font-weight:600;
+    -webkit-tap-highlight-color:transparent;touch-action:manipulation}
+  .stepper button:hover{background:var(--soft);border-color:var(--teal)}
+  .stepper input{width:clamp(72px,20vw,84px);text-align:center;font-weight:700;font-size:17px}
+
+  .estimate{background:var(--navy);border-radius:14px;padding:clamp(16px,4.5vw,22px);
+    margin-top:16px;color:#fff}
+  .estimate .eh{font-size:12px;letter-spacing:1.5px;text-transform:uppercase;color:#5fd6e2;font-weight:600;margin-bottom:14px}
+  .est-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,200px),1fr));gap:14px}
+  .est-cell .l{font-size:12px;color:#a9bacb;margin-bottom:3px}
+  .est-cell .v{font-size:clamp(20px,5.5vw,24px);font-weight:700}
+  .est-cell .v small{font-size:13px;font-weight:400;color:#a9bacb}
+  .est-div{height:1px;background:rgba(255,255,255,.12);margin:16px 0}
+  .est-pay{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,200px),1fr));gap:14px}
+  .est-pay .dp{background:var(--teal-dk);border-radius:10px;padding:12px 15px}
+  .est-pay .dp .l{font-size:11.5px;color:#d6f2f5;text-transform:uppercase;letter-spacing:.5px}
+  .est-pay .dp .v{font-size:clamp(18px,5vw,21px);font-weight:700;margin-top:3px}
+  .est-pay .bl{background:rgba(255,255,255,.08);border-radius:10px;padding:12px 15px}
+  .est-pay .bl .l{font-size:11.5px;color:#a9bacb;text-transform:uppercase;letter-spacing:.5px}
+  .est-pay .bl .v{font-size:clamp(18px,5vw,21px);font-weight:700;margin-top:3px}
+  .est-pay .bl .sub{font-size:11px;color:#8b9bad;margin-top:2px}
+  .est-incl{font-size:12px;color:#c3d0dd;margin-top:13px;font-style:italic;border-top:1px solid rgba(255,255,255,.1);padding-top:10px}
+
+  .prem-q{display:flex;gap:10px;margin-bottom:14px}
+  .prem-q button{flex:1;padding:13px;border:1px solid var(--line);background:#fbfcfd;border-radius:10px;
+    cursor:pointer;font-size:clamp(14px,3.5vw,14.5px);font-weight:600;color:var(--muted);
+    -webkit-tap-highlight-color:transparent;min-height:46px}
+  .prem-q button.on{border-color:var(--teal-dk);background:var(--teal-bg);color:var(--teal-dk);border-width:2px}
+  #premList.hide{display:none}
+  .feat{display:flex;align-items:center;gap:13px;padding:clamp(12px,3.2vw,15px);border:1px solid var(--line);
+    border-radius:11px;cursor:pointer;margin-bottom:10px;background:#fbfcfd;transition:.12s;
+    -webkit-tap-highlight-color:transparent}
+  .feat.on{border-color:var(--teal-dk);border-width:2px;background:var(--teal-bg)}
+  .feat .nm{flex:1;min-width:0}
+  .feat .nm .t{font-weight:700;font-size:clamp(14px,3.5vw,14.5px)}
+  .feat.on .nm .t{color:var(--teal-dk)}
+  .feat .nm .d{font-size:12px;color:var(--muted)}
+  .feat .pr{text-align:right;font-size:12px;color:var(--muted);white-space:nowrap;font-weight:500}
+  .feat .chk{width:23px;height:23px;border-radius:50%;border:1.5px solid var(--line);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:13px;color:#fff}
+  .feat.on .chk{background:var(--teal-dk);border-color:var(--teal-dk)}
+  .bundle{display:none;background:var(--ok-bg);color:var(--ok);padding:11px 14px;border-radius:9px;font-size:13px;font-weight:600;margin-top:4px}
+  .bundle.show{display:block}
+  .prem-terms{font-size:11.5px;color:var(--muted);margin-top:10px;line-height:1.5;background:var(--soft);padding:10px 13px;border-radius:8px}
+
+  .filebox{border:1.5px dashed var(--line);border-radius:10px;padding:18px;text-align:center;color:var(--muted);
+    font-size:13px;background:#fbfcfd;cursor:pointer;display:block;-webkit-tap-highlight-color:transparent}
+  .filebox:hover{border-color:var(--teal)}
+  .filebox input{display:none}
+
+  .cond{display:none;margin-top:13px;padding-left:14px;border-left:3px solid var(--teal-bg)}
+  .cond.show{display:block}
+
+  /* QR payment picker */
+  .qr-pick{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,150px),1fr));gap:12px;margin-bottom:14px}
+  .qr-opt{border:1px solid var(--line);border-radius:12px;padding:14px;text-align:center;cursor:pointer;background:#fbfcfd;transition:.12s;-webkit-tap-highlight-color:transparent}
+  .qr-opt:hover{border-color:var(--teal)}
+  .qr-opt.on{border-color:var(--teal-dk);border-width:2px;background:var(--teal-bg)}
+  .qr-opt .ic{width:44px;height:44px;border-radius:10px;background:var(--navy);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px;margin:0 auto 8px}
+  .qr-opt.on .ic{background:var(--teal-dk)}
+  .qr-opt .nm{font-weight:700;font-size:14px;color:var(--navy)}
+  .qr-opt .sub{font-size:11.5px;color:var(--muted);margin-top:2px}
+  .qr-display{display:none;text-align:center;padding:18px;background:var(--soft);border-radius:12px;margin-top:6px}
+  .qr-display.show{display:block}
+  .qr-display img{width:clamp(180px,55vw,240px);height:auto;border-radius:10px;background:#fff;padding:10px;border:1px solid var(--line)}
+  .qr-display .cap{font-size:13px;color:var(--navy);font-weight:600;margin-top:10px}
+  .qr-display .hint{font-size:12px;color:var(--muted);margin-top:3px}
+
+  .confirm-box{background:var(--soft);border-radius:10px;padding:clamp(14px,3.5vw,18px)}
+  .confirm-box .crow{display:flex;justify-content:space-between;gap:12px;padding:5px 0;font-size:clamp(13px,3.2vw,13.5px)}
+  .confirm-box .crow .k{color:var(--muted)}
+  .confirm-box .crow .v{font-weight:600;text-align:right}
+  .confirm-box .crow.big .v{color:var(--navy);font-size:15px}
+  .checkrow{display:flex;align-items:flex-start;gap:10px;margin-top:14px;font-size:14px}
+  .checkrow input{margin-top:3px;width:19px;height:19px;accent-color:var(--teal-dk);flex-shrink:0}
+
+  .gcash{background:var(--teal-bg);border:1px solid var(--teal);border-radius:11px;padding:16px 18px;margin-top:6px;font-size:13.5px;color:var(--navy);line-height:1.6}
+  .gcash b{color:var(--teal-dk)}
+
+  .actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:8px}
+  .btn{padding:clamp(13px,3.5vw,15px) 24px;border-radius:11px;font-size:15px;font-weight:700;cursor:pointer;
+    border:1px solid var(--line);background:#fff;color:var(--navy);
+    -webkit-tap-highlight-color:transparent;min-height:50px;flex:1;min-width:min(100%,200px)}
+  .btn.primary{background:var(--teal-dk);color:#fff;border-color:var(--teal-dk)}
+  .btn.primary:hover{background:var(--teal)}
+  .btn.ghost:hover{background:var(--soft)}
+  .foot-hint{font-size:12px;color:var(--muted);text-align:center;margin-top:18px}
+
+  #proposal{display:none}
+  @media print{
+    body{background:#fff}
+    .shell > *:not(#proposal){display:none !important}
+    #proposal{display:block !important}
+    .shell{padding:0;max-width:none}
+  }
+  #proposal.preview{display:block;margin-top:20px}
+  .pp{background:#fff;padding:clamp(24px,6vw,46px);border:1px solid var(--line);border-radius:10px}
+  @media print{.pp{border:none;padding:0}}
+  .pp-hd{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap;
+    border-bottom:3px solid var(--navy);padding-bottom:16px;margin-bottom:20px}
+  .pp-hd img{height:clamp(40px,10vw,54px)}
+  .pp-hd .meta{text-align:right;font-size:11.5px;color:var(--muted);line-height:1.6}
+  .pp-hd .meta b{color:var(--navy);font-size:14px}
+  .pp-sub{font-size:14px;color:var(--muted);margin-bottom:24px}
+  .pp-sec{margin-bottom:22px}
+  .pp-sec h3{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--teal-dk);border-bottom:1px solid var(--line);padding-bottom:6px;margin-bottom:11px;font-weight:700}
+  .pp-kv{display:flex;justify-content:space-between;gap:12px;padding:3px 0;font-size:13px}
+  .pp-kv .k{color:var(--muted)}
+  .pp-kv .v{font-weight:600;text-align:right}
+  table.ln{width:100%;border-collapse:collapse;font-size:13px}
+  table.ln th{text-align:left;font-size:10.5px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);border-bottom:1px solid var(--line);padding:7px 3px}
+  table.ln th.r,table.ln td.r{text-align:right;white-space:nowrap}
+  table.ln td{padding:8px 3px;border-bottom:1px solid #f0f2f5}
+  table.ln tr.tot td{font-weight:700;border-top:2px solid var(--navy);border-bottom:none;font-size:14px;padding-top:10px;color:var(--navy)}
+  table.ln tr.disc td{color:var(--ok)}
+  .pp-pay{display:flex;gap:14px;margin-top:4px;flex-wrap:wrap}
+  .pp-pay .b{flex:1;min-width:min(100%,180px);border:1px solid var(--line);border-radius:9px;padding:13px 15px}
+  .pp-pay .b.hl{background:var(--teal-bg);border-color:var(--teal)}
+  .pp-pay .b .l{font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+  .pp-pay .b .v{font-size:19px;font-weight:700;margin-top:3px;color:var(--navy)}
+  .pp-pay .b.hl .v{color:var(--teal-dk)}
+  .pp-pay .b .sub{font-size:10px;color:var(--muted);margin-top:2px}
+  .pp-foot{margin-top:26px;padding-top:14px;border-top:1px solid var(--line);font-size:11px;color:var(--muted);line-height:1.6}
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <!-- LOGO: https://i.imgur.com/5Dd4dwI.png -->
+  <div class="cover">
+    <img src="https://i.imgur.com/5Dd4dwI.png" alt="LAYAW System" onerror="this.style.display='none'">
+    <h1>Build Your Booking Page</h1>
+    <p>Fill in your court details below and you'll see your estimated setup cost instantly. Ready in a few days.</p>
+    <div class="tagpills">SIMPLE · SMART · SOLID</div>
+  </div>
+
+  <!-- 1 Your Details -->
+  <div class="card">
+    <div class="sec-h"><div class="num">1</div><div class="tt">Your details</div></div>
+    <div class="row2">
+      <div class="fld"><label>Full name<span class="req">*</span></label><input type="text" id="c_name" placeholder="Juan Dela Cruz"></div>
+      <div class="fld"><label>Court / Club name<span class="req">*</span></label><input type="text" id="c_club" placeholder="LAYAW Pickleball Club"></div>
+      <div class="fld"><label>Mobile number<span class="req">*</span></label><input type="tel" id="c_mobile" placeholder="0917 000 0000"></div>
+      <div class="fld"><label>Email address<span class="req">*</span></label><input type="email" id="c_email" placeholder="name@email.com"></div>
+    </div>
+    <div class="fld"><label>Preferred communication<span class="req">*</span></label>
+      <div class="chips" id="reach">
+        <div class="chip" data-v="FB Messenger">FB Messenger</div>
+        <div class="chip" data-v="Viber">Viber</div>
+        <div class="chip" data-v="WhatsApp">WhatsApp</div>
+        <div class="chip" data-v="Email">Email</div>
+        <div class="chip" data-v="Phone">Phone</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2 Courts & Pricing -->
+  <div class="card">
+    <div class="sec-h"><div class="num">2</div><div class="tt">Courts &amp; pricing</div></div>
+    <div class="fld">
+      <label>How many courts do you have?<span class="req">*</span></label>
+      <div class="help">Between 1 and 10 courts</div>
+      <div class="stepper">
+        <button type="button" id="minus">−</button>
+        <input type="number" id="courts" min="1" max="10" value="1" inputmode="numeric">
+        <button type="button" id="plus">+</button>
+      </div>
+    </div>
+
+    <div class="estimate">
+      <div class="eh">Your estimated cost</div>
+      <div class="est-grid">
+        <div class="est-cell"><div class="l">One-time setup cost</div><div class="v" id="e_setup">₱0</div></div>
+        <div class="est-cell"><div class="l">Support / hosting fee</div><div class="v" id="e_monthly">₱0 <small>/mo (paid yearly)</small></div></div>
+      </div>
+      <div class="est-div"></div>
+      <div class="est-pay">
+        <div class="dp"><div class="l">50% Downpayment (to start)</div><div class="v" id="e_down">₱0</div></div>
+        <div class="bl"><div class="l">Balance upon turnover</div><div class="v" id="e_bal">₱0</div><div class="sub" id="e_bal_sub"></div></div>
+      </div>
+      <div class="est-incl">Includes full Firebase build, custom domain, real-time dashboards, and your automatic monthly statement.</div>
+    </div>
+
+    <div class="fld" style="margin-top:16px"><label>Court names / labels<span class="req">*</span></label>
+      <div class="help">e.g. Court 1, Court 2, Center Court</div>
+      <textarea id="c_courtnames" placeholder="Court 1, Court 2, ..."></textarea>
+    </div>
+  </div>
+
+  <!-- 3 Premium Features -->
+  <div class="card">
+    <div class="sec-h"><div class="num">3</div><div class="tt">Premium features<small>Optional upgrades — bundle discounts apply</small></div></div>
+    <div class="fld">
+      <label>Do you want to avail the premium features?<span class="req">*</span></label>
+      <div class="prem-q">
+        <button type="button" id="pYes" class="on">Yes</button>
+        <button type="button" id="pNo">No</button>
+      </div>
+    </div>
+    <div id="premList">
+      <div id="features"></div>
+      <div class="bundle" id="bundle"></div>
+      <div class="prem-terms" id="premTerms"></div>
+    </div>
+  </div>
+
+  <!-- 4 Booking Settings -->
+  <div class="card">
+    <div class="sec-h"><div class="num">4</div><div class="tt">Booking settings</div></div>
+    <div class="row2">
+      <div class="fld"><label>Opening time<span class="req">*</span></label><input type="time" id="c_open" value="06:00"></div>
+      <div class="fld"><label>Closing time<span class="req">*</span></label><input type="time" id="c_close" value="22:00"></div>
+    </div>
+    <div class="fld"><label>Court rates<span class="req">*</span></label>
+      <div class="help">Describe your court rates (per hour, per session, etc.)</div>
+      <textarea id="c_rates" placeholder="e.g. ₱400/hour peak, ₱300/hour off-peak"></textarea>
+    </div>
+    <div class="fld"><label>Do your rates change by time of day?<span class="req">*</span></label>
+      <div class="chips single" id="timerates">
+        <div class="chip" data-v="Yes">Yes</div><div class="chip" data-v="No">No</div>
+      </div>
+      <div class="cond" id="timeratesCond">
+        <div class="fld" style="margin:0"><label>If yes, describe your time-based rates<span class="req">*</span></label>
+          <textarea id="c_timedesc" placeholder="e.g. 6AM–5PM ₱300/hr · 5PM–10PM ₱400/hr"></textarea>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 5 Branding & Design -->
+  <div class="card">
+    <div class="sec-h"><div class="num">5</div><div class="tt">Branding &amp; design</div></div>
+    <div class="fld"><label>Upload your logo<span class="req">*</span></label>
+      <label class="filebox">Click to choose a file or drag here (max 10 MB)<input type="file" accept="image/*"></label>
+    </div>
+    <div class="fld"><label>Upload your court photos (optional)</label>
+      <label class="filebox">Up to 4 photos (max 10 MB each)<input type="file" accept="image/*" multiple></label>
+    </div>
+    <div class="fld"><label>Design inspiration (optional)</label>
+      <label class="filebox">Upload any reference / inspiration images<input type="file" accept="image/*" multiple></label>
+    </div>
+    <div class="fld"><label>Preferred colors<span class="req">*</span></label>
+      <div class="help">Max 2 colors</div>
+      <input type="text" id="c_colors" placeholder="e.g. Navy blue &amp; teal">
+    </div>
+    <div class="fld"><label>Tagline</label><input type="text" id="c_tagline" placeholder="Your court's tagline (optional)"></div>
+    <div class="fld"><label>Preferred custom domain</label><input type="text" id="c_domain" placeholder="e.g. yourcourt.com (optional)"></div>
+  </div>
+
+  <!-- 6 Payment Details -->
+  <div class="card">
+    <div class="sec-h"><div class="num">6</div><div class="tt">Payment details<small>Shown to your customers on booking</small></div></div>
+    <div class="fld"><label>Payment methods accepted<span class="req">*</span></label>
+      <div class="chips" id="paymethods">
+        <div class="chip" data-v="GCash">GCash</div><div class="chip" data-v="Maya">Maya</div>
+        <div class="chip" data-v="Bank">Bank</div><div class="chip" data-v="Others">Others</div>
+      </div>
+
+      <div class="cond" id="pm_GCash">
+        <div class="fld"><label>Enter GCash — name &amp; number<span class="req">*</span></label><input type="text" placeholder="Juan Dela Cruz · 0917 000 0000"></div>
+        <div class="fld" style="margin:0"><label>Upload your GCash QR<span class="req">*</span></label><label class="filebox">Click to choose a file (max 10 MB)<input type="file" accept="image/*"></label></div>
+      </div>
+      <div class="cond" id="pm_Maya">
+        <div class="fld"><label>Enter Maya — name &amp; number<span class="req">*</span></label><input type="text" placeholder="Juan Dela Cruz · 0917 000 0000"></div>
+        <div class="fld" style="margin:0"><label>Upload your Maya QR<span class="req">*</span></label><label class="filebox">Click to choose a file (max 10 MB)<input type="file" accept="image/*"></label></div>
+      </div>
+      <div class="cond" id="pm_Bank">
+        <div class="fld"><label>Enter Bank details<span class="req">*</span></label><textarea placeholder="Bank name, account name, account number"></textarea></div>
+        <div class="fld" style="margin:0"><label>Upload your Bank QR (optional)</label><label class="filebox">Click to choose a file (max 10 MB)<input type="file" accept="image/*"></label></div>
+      </div>
+      <div class="cond" id="pm_Others">
+        <div class="fld"><label>Enter other payment details<span class="req">*</span></label><textarea placeholder="Describe the payment method"></textarea></div>
+        <div class="fld" style="margin:0"><label>Upload QR (optional)</label><label class="filebox">Click to choose a file (max 10 MB)<input type="file" accept="image/*"></label></div>
+      </div>
+    </div>
+
+    <div class="fld"><label>Contact number shown on confirmed bookings<span class="req">*</span></label><input type="tel" id="c_booknum" placeholder="0917 000 0000"></div>
+    <div class="row2">
+      <div class="fld"><label>Google Maps link</label><input type="url" id="c_maps" placeholder="https://maps.google.com/..."></div>
+      <div class="fld"><label>Facebook page link</label><input type="url" id="c_fb" placeholder="https://facebook.com/..."></div>
+      <div class="fld"><label>Instagram link</label><input type="url" id="c_ig" placeholder="https://instagram.com/..."></div>
+      <div class="fld"><label>Court complete address<span class="req">*</span></label><input type="text" id="c_addr" placeholder="Full address"></div>
+    </div>
+  </div>
+
+  <!-- 7 Members (only if Membership premium selected) -->
+  <div class="card" id="membersCard" style="display:none">
+    <div class="sec-h"><div class="num">7</div><div class="tt">Members<small>You availed the Membership feature</small></div></div>
+    <div class="fld"><label>Do you have members to pre-load?</label>
+      <div class="chips single" id="hasmembers">
+        <div class="chip" data-v="Yes">Yes</div><div class="chip" data-v="No">No</div>
+      </div>
+    </div>
+    <div class="fld"><label>If yes, list members</label>
+      <textarea id="c_members" placeholder="Name, mobile, membership type — one per line"></textarea>
+    </div>
+  </div>
+
+  <!-- 8 Summary & Payment -->
+  <div class="card">
+    <div class="sec-h"><div class="num" id="sumNum">8</div><div class="tt">Summary &amp; payment</div></div>
+    <div class="help" style="margin-bottom:10px">Please review your details before submitting:</div>
+    <div class="confirm-box">
+      <div class="crow"><span class="k">Court / Club name</span><span class="v" id="s_club">—</span></div>
+      <div class="crow"><span class="k">Number of courts</span><span class="v" id="s_courts">—</span></div>
+      <div class="crow"><span class="k">Premium features</span><span class="v" id="s_prem">None</span></div>
+      <div class="crow big"><span class="k">One-time setup cost</span><span class="v" id="s_setup">₱0</span></div>
+      <div class="crow"><span class="k">Support / hosting (monthly)</span><span class="v" id="s_monthly">₱0/mo</span></div>
+      <div class="crow big"><span class="k">50% Downpayment</span><span class="v" id="s_down">₱0</span></div>
+      <div class="crow"><span class="k">Balance upon turnover</span><span class="v" id="s_bal">₱0</span></div>
+    </div>
+
+    <!-- Payment QR picker -->
+    <div class="fld" style="margin-top:18px"><label>Send your downpayment to:<span class="req">*</span></label>
+      <div class="qr-pick">
+        <div class="qr-opt" id="qrGCashOpt" data-qr="gcash"><div class="ic">G</div><div class="nm">GCash</div><div class="sub">Scan to pay</div></div>
+        <div class="qr-opt" id="qrMaribankOpt" data-qr="maribank"><div class="ic">M</div><div class="nm">Maribank</div><div class="sub">Scan to pay</div></div>
+      </div>
+      <div class="qr-display" id="qrGCashImg">
+        <img src="https://i.imgur.com/1XsS4AO.png" alt="GCash QR code" onerror="this.parentNode.innerHTML='<div style=color:#6a7684;font-size:13px>GCash QR could not load — check your connection.</div>'">
+        <div class="cap">GCash</div>
+        <div class="hint">Scan this QR with your GCash app to send your downpayment.</div>
+      </div>
+      <div class="qr-display" id="qrMaribankImg">
+        <img src="https://i.imgur.com/jH6PNAy.png" alt="Maribank QR code" onerror="this.parentNode.innerHTML='<div style=color:#6a7684;font-size:13px>Maribank QR could not load — check your connection.</div>'">
+        <div class="cap">Maribank</div>
+        <div class="hint">Scan this QR with your Maribank app to send your downpayment.</div>
+      </div>
+    </div>
+
+    <div class="checkrow">
+      <input type="checkbox" id="c_confirm">
+      <label for="c_confirm" style="font-weight:500;margin:0">I understand the setup cost and downpayment, and I'm ready to proceed →</label>
+    </div>
+
+    <div class="fld" style="margin-top:16px"><label>Anything else you'd like us to know?<span class="req">*</span></label>
+      <textarea id="c_notes" placeholder="Special requests, questions, etc."></textarea>
+    </div>
+
+    <div class="gcash">
+      To begin your build, please send your <b>50% downpayment</b> (<span id="g_down">₱0</span>) by scanning the QR above, then tap <b>Build My Booking Page</b>. After submitting, reply to our chat with your payment screenshot and we'll get started right away.
+    </div>
+
+    <div class="fld" style="margin-top:16px"><label>Upload your downpayment receipt<span class="req">*</span></label>
+      <label class="filebox">Click to choose a file or drag here (max 10 MB)<input type="file" accept="image/*"></label>
+    </div>
+
+    <div class="actions">
+      <button type="button" class="btn primary" id="btnBuild">Build My Booking Page</button>
+      <button type="button" class="btn ghost" id="btnProposal">Download proposal (PDF)</button>
+    </div>
+    <div class="foot-hint">Downloading the proposal opens your print dialog — choose "Save as PDF" to keep a copy of your quote.</div>
+  </div>
+
+  <!-- ===== PROPOSAL ===== -->
+  <div id="proposal">
+    <div class="pp">
+      <div class="pp-hd">
+        <img src="https://i.imgur.com/5Dd4dwI.png" alt="LAYAW System" onerror="this.style.display='none'">
+        <div class="meta"><b>Booking Page Proposal</b><div id="pp_date"></div><div id="pp_ref"></div></div>
+      </div>
+      <div class="pp-sub">Custom court booking system — setup &amp; hosting quotation</div>
+
+      <div class="pp-sec"><h3>Prepared for</h3>
+        <div class="pp-kv"><span class="k">Client</span><span class="v" id="pp_name">—</span></div>
+        <div class="pp-kv"><span class="k">Court / Club</span><span class="v" id="pp_club">—</span></div>
+        <div class="pp-kv"><span class="k">Mobile</span><span class="v" id="pp_mobile">—</span></div>
+        <div class="pp-kv"><span class="k">Email</span><span class="v" id="pp_email">—</span></div>
+        <div class="pp-kv"><span class="k">Number of courts</span><span class="v" id="pp_courts">—</span></div>
+      </div>
+
+      <div class="pp-sec"><h3>One-time setup</h3>
+        <table class="ln"><thead><tr><th>Item</th><th class="r">Amount</th></tr></thead><tbody id="pp_setup"></tbody></table>
+      </div>
+
+      <div class="pp-sec"><h3>Monthly support / hosting <span style="text-transform:none;letter-spacing:0;font-weight:400;color:var(--muted)">(paid yearly)</span></h3>
+        <table class="ln"><thead><tr><th>Item</th><th class="r">Amount</th></tr></thead><tbody id="pp_monthly"></tbody></table>
+      </div>
+
+      <div class="pp-sec"><h3>Payment schedule</h3>
+        <div class="pp-pay">
+          <div class="b hl"><div class="l">50% Downpayment (to start)</div><div class="v" id="pp_down">₱0</div></div>
+          <div class="b"><div class="l">Balance (upon turnover)</div><div class="v" id="pp_bal">₱0</div><div class="sub" id="pp_bal_sub"></div></div>
+        </div>
+      </div>
+
+      <div class="pp-sec"><h3>What's included</h3>
+        <div style="font-size:12.5px;line-height:1.7">Full Firebase build, custom domain, real-time dashboards, and your automatic monthly statement.<span id="pp_incl"></span></div>
+      </div>
+
+      <div class="pp-foot">
+        Balance upon turnover = remaining 50% of setup + one year of support/hosting (monthly fee × 12), since hosting is billed yearly. Premium bundle discounts apply automatically based on the number of features selected (2 features = 10% off setup / 5% off monthly; 3 = 15% / 10%; all 4 = 25% / 30%). Minimum monthly add-on for premium features is ₱500. This proposal is an estimate; final scope is confirmed on booking.<br><br>
+        To proceed, send your 50% downpayment, then reply with your payment screenshot to begin your build. — LAYAW System · Simple · Smart · Solid
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+(function(){
+  var FEATURES=[
+    {id:'membership',name:'Membership',desc:'Member/guest rates, member management',setup:10000,monthly:500},
+    {id:'openplay',name:'Open Play',desc:'Sessions, join, registration',setup:10000,monthly:500},
+    {id:'analytics',name:'Advanced Analytics',desc:'Heatmaps, forecasting, exports',setup:15000,monthly:700},
+    {id:'livequeue',name:'Live Queue + Voiceover',desc:'Real-time, display, TTS, on-site',setup:25000,monthly:900}
+  ];
+  var TIERS={
+    2:{setup:.10,monthly:.05,label:'2 features — 10% off setup, 5% off monthly'},
+    3:{setup:.15,monthly:.10,label:'3 features — 15% off setup, 10% off monthly'},
+    4:{setup:.25,monthly:.30,label:'All 4 features — 25% off setup, 30% off monthly'}
+  };
+  var MIN_MONTHLY=500, DP=0.5;
+  var selected={}, premOn=true, STATE={};
+  var $=function(i){return document.getElementById(i)};
+  function peso(n){return '\u20b1'+Math.round(n).toLocaleString('en-PH')}
+  function baseMonthly(c){return c<5?800:(c<9?1200:1800)}
+
+  function initChips(id, single, cb){
+    var box=$(id); if(!box) return;
+    box.querySelectorAll('.chip').forEach(function(ch){
+      ch.onclick=function(){
+        if(single){box.querySelectorAll('.chip').forEach(function(x){x.classList.remove('on')});ch.classList.add('on');}
+        else{ch.classList.toggle('on');}
+        if(cb) cb();
+      };
+    });
+  }
+  initChips('reach',false);
+  initChips('timerates',true,function(){
+    var yes=$('timerates').querySelector('.chip.on');
+    $('timeratesCond').className='cond'+(yes&&yes.dataset.v==='Yes'?' show':'');
+  });
+  initChips('hasmembers',true);
+  initChips('paymethods',false,function(){
+    ['GCash','Maya','Bank','Others'].forEach(function(m){
+      var on=false;
+      $('paymethods').querySelectorAll('.chip.on').forEach(function(c){if(c.dataset.v===m)on=true;});
+      $('pm_'+m).className='cond'+(on?' show':'');
+    });
+  });
+
+  // QR picker
+  function pickQR(which){
+    $('qrGCashOpt').classList.toggle('on', which==='gcash');
+    $('qrMaribankOpt').classList.toggle('on', which==='maribank');
+    $('qrGCashImg').className='qr-display'+(which==='gcash'?' show':'');
+    $('qrMaribankImg').className='qr-display'+(which==='maribank'?' show':'');
+  }
+  $('qrGCashOpt').onclick=function(){pickQR('gcash')};
+  $('qrMaribankOpt').onclick=function(){pickQR('maribank')};
+
+  function renderFeatures(){
+    var box=$('features');box.innerHTML='';
+    FEATURES.forEach(function(f){
+      var on=!!selected[f.id];
+      var d=document.createElement('div');
+      d.className='feat'+(on?' on':'');
+      d.innerHTML='<div class="nm"><div class="t">'+f.name+'</div><div class="d">'+f.desc+'</div></div>'
+        +'<div class="pr">'+peso(f.setup)+'<br>+'+peso(f.monthly)+'/mo</div>'
+        +'<div class="chk">'+(on?'\u2713':'')+'</div>';
+      d.onclick=function(){selected[f.id]=!on;renderFeatures();calc()};
+      box.appendChild(d);
+    });
+    $('premTerms').innerHTML='Bundle discounts: <b>2 features</b> = 10% off setup + 5% off monthly \u00b7 <b>3 features</b> = 15% + 10% \u00b7 <b>All 4</b> = 25% + 30%. Minimum monthly add-on is \u20b1500.';
+  }
+
+  function updateMembersVisibility(){
+    var show = premOn && !!selected['membership'];
+    $('membersCard').style.display = show ? '' : 'none';
+    $('sumNum').textContent = show ? '8' : '7';
+  }
+
+  function calc(){
+    var c=Math.max(1,Math.min(10,parseInt($('courts').value)||1));
+    var baseSetup=12000+c*3000, baseMon=baseMonthly(c);
+    var chosen=premOn?FEATURES.filter(function(f){return selected[f.id]}):[];
+    var count=chosen.length;
+    var pSetupRaw=chosen.reduce(function(s,f){return s+f.setup},0);
+    var pMonRaw=chosen.reduce(function(s,f){return s+f.monthly},0);
+    var tier=TIERS[count]||null;
+    var pSetup=pSetupRaw,pMon=pMonRaw;
+    if(tier){pSetup=pSetupRaw*(1-tier.setup);pMon=pMonRaw*(1-tier.monthly);}
+    if(count>0)pMon=Math.max(pMon,MIN_MONTHLY);
+    var setup=baseSetup+pSetup, monthly=baseMon+pMon;
+    var down=setup*DP;
+    var bal=down + monthly*12;
+
+    $('e_setup').textContent=peso(setup);
+    $('e_monthly').innerHTML=peso(monthly)+' <small>/mo (paid yearly)</small>';
+    $('e_down').textContent=peso(down);
+    $('e_bal').textContent=peso(bal);
+    $('e_bal_sub').textContent='50% ('+peso(down)+') + hosting × 12 ('+peso(monthly*12)+')';
+
+    var bEl=$('bundle');
+    if(tier){bEl.className='bundle show';bEl.textContent='\u2713 Bundle applied \u2014 '+tier.label+'.';}
+    else bEl.className='bundle';
+
+    $('s_club').textContent=$('c_club').value||'\u2014';
+    $('s_courts').textContent=c+' court'+(c>1?'s':'');
+    $('s_prem').textContent=count?chosen.map(function(f){return f.name}).join(', '):'None';
+    $('s_setup').textContent=peso(setup);
+    $('s_monthly').textContent=peso(monthly)+'/mo';
+    $('s_down').textContent=peso(down);
+    $('s_bal').textContent=peso(bal);
+    $('g_down').textContent=peso(down);
+
+    updateMembersVisibility();
+
+    STATE={c:c,baseSetup:baseSetup,baseMon:baseMon,chosen:chosen,count:count,tier:tier,
+      pSetupRaw:pSetupRaw,pMonRaw:pMonRaw,pSetup:pSetup,pMon:pMon,setup:setup,monthly:monthly,down:down,bal:bal};
+  }
+
+  function buildProposal(){
+    var s=STATE;
+    $('pp_date').textContent=new Date().toLocaleDateString('en-PH',{year:'numeric',month:'long',day:'numeric'});
+    $('pp_ref').textContent='Ref: '+Date.now().toString().slice(-6);
+    $('pp_name').textContent=$('c_name').value||'\u2014';
+    $('pp_club').textContent=$('c_club').value||'\u2014';
+    $('pp_mobile').textContent=$('c_mobile').value||'\u2014';
+    $('pp_email').textContent=$('c_email').value||'\u2014';
+    $('pp_courts').textContent=s.c+' court'+(s.c>1?'s':'');
+
+    var sr='<tr><td>Base package build ('+s.c+' court'+(s.c>1?'s':'')+')</td><td class="r">'+peso(s.baseSetup)+'</td></tr>';
+    if(s.count>0){
+      s.chosen.forEach(function(f){sr+='<tr><td>'+f.name+'</td><td class="r">'+peso(f.setup)+'</td></tr>';});
+      if(s.tier){var sv=s.pSetupRaw-s.pSetup;sr+='<tr class="disc"><td>Bundle discount ('+Math.round(s.tier.setup*100)+'% off premium)</td><td class="r">\u2212'+peso(sv)+'</td></tr>';}
+    }
+    sr+='<tr class="tot"><td>Total one-time setup</td><td class="r">'+peso(s.setup)+'</td></tr>';
+    $('pp_setup').innerHTML=sr;
+
+    var mr='<tr><td>Base support / hosting ('+s.c+' court'+(s.c>1?'s':'')+')</td><td class="r">'+peso(s.baseMon)+'/mo</td></tr>';
+    if(s.count>0){
+      s.chosen.forEach(function(f){mr+='<tr><td>'+f.name+'</td><td class="r">'+peso(f.monthly)+'/mo</td></tr>';});
+      if(s.tier){var mv=s.pMonRaw-s.pMon;if(mv>0.5)mr+='<tr class="disc"><td>Bundle discount ('+Math.round(s.tier.monthly*100)+'% off premium)</td><td class="r">\u2212'+peso(mv)+'/mo</td></tr>';}
+      if(s.pMon===MIN_MONTHLY)mr+='<tr class="disc"><td>Minimum monthly add-on applied</td><td class="r">'+peso(MIN_MONTHLY)+'/mo</td></tr>';
+    }
+    mr+='<tr class="tot"><td>Total monthly support</td><td class="r">'+peso(s.monthly)+'/mo</td></tr>';
+    $('pp_monthly').innerHTML=mr;
+
+    $('pp_down').textContent=peso(s.down);
+    $('pp_bal').textContent=peso(s.bal);
+    $('pp_bal_sub').textContent='50% ('+peso(s.down)+') + hosting × 12 ('+peso(s.monthly*12)+')';
+    $('pp_incl').textContent=s.count?(' Premium features included: '+s.chosen.map(function(f){return f.name}).join(', ')+'.'):'';
+  }
+
+  $('plus').onclick=function(){$('courts').value=Math.min(10,(parseInt($('courts').value)||1)+1);calc()};
+  $('minus').onclick=function(){$('courts').value=Math.max(1,(parseInt($('courts').value)||1)-1);calc()};
+  $('courts').oninput=calc;
+  $('c_club').oninput=calc;
+
+  $('pYes').onclick=function(){premOn=true;this.classList.add('on');$('pNo').classList.remove('on');$('premList').classList.remove('hide');calc()};
+  $('pNo').onclick=function(){premOn=false;this.classList.add('on');$('pYes').classList.remove('on');$('premList').classList.add('hide');calc()};
+
+  $('btnProposal').onclick=function(){buildProposal();window.print()};
+  $('btnBuild').onclick=function(){
+    if(!$('c_confirm').checked){alert('Please tick the confirmation box before submitting.');return;}
+    buildProposal();window.print();
+  };
+
+  renderFeatures();
+  calc();
+})();
+</script>
+</body>
+</html>
